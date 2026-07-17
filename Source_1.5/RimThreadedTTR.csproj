@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Project file for building with the .NET SDK (dotnet build).
+    The DLL shipped in 1.6/Assemblies was compiled on a machine without the SDK
+    using the legacy framework compiler; that is why the source is C# 5 only:
+
+    C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe
+      /noconfig /nostdlib+ /langversion:5 /target:library /optimize+
+      /out:..\1.6\Assemblies\RimThreadedTTR.dll
+      /r:(RimWorld Managed dir)\mscorlib.dll;System.dll;System.Core.dll;netstandard.dll;
+         Assembly-CSharp.dll;UnityEngine.CoreModule.dll;(Harmony)\0Harmony.dll
+      *.cs
+  -->
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>5</LangVersion>
+    <OutputPath>..\1.6\Assemblies</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <DebugType>none</DebugType>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <!-- Adjust to your RimWorld install -->
+    <RimWorldManaged>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed</RimWorldManaged>
+    <HarmonyDir>C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\2009463077\Current\Assemblies</HarmonyDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(RimWorldManaged)\Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(RimWorldManaged)\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(HarmonyDir)\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

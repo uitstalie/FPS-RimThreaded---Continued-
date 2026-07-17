@@ -1,0 +1,205 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+using Verse;
+
+namespace RimThreadedTTR
+{
+    public class TTRSettings : ModSettings
+    {
+        // -1 means "auto" (processor count - 2, min 1)
+        public int maxThreads = -1;
+
+        public bool parallelFlecks = true;
+        public bool parallelFleckDraw = true;
+        public int fleckThreshold = 200;
+
+        // Per-system opt-in for particle systems added by other mods,
+        // keyed by system type full name. Missing key = OFF (safe default).
+        public Dictionary<string, bool> moddedFleckSystems = new Dictionary<string, bool>();
+
+        public bool IsModdedSystemEnabled(string key)
+        {
+            bool enabled;
+            if (moddedFleckSystems != null && moddedFleckSystems.TryGetValue(key, out enabled))
+            {
+                return enabled;
+            }
+            return false;
+        }
+
+        public void SetModdedSystemEnabled(string key, bool value)
+        {
+            if (moddedFleckSystems == null)
+            {
+                moddedFleckSystems = new Dictionary<string, bool>();
+            }
+            moddedFleckSystems[key] = value;
+        }
+
+        public bool threadSafeRand = true;
+        public bool marshalSounds = true;
+
+        public bool parallelTargeting = true;
+        public int targetingThreshold = 8;
+
+#if TTR_MERGED
+        // v1.2: the FPS+ module's settings live inside this mod's settings,
+        // persisted in the same file. One mod, one settings entry.
+        public FPSPlus.FPSPlusSettings fpsSettings = new FPSPlus.FPSPlusSettings();
+#endif
+
+        public int MaxThreadsClamped
+        {
+            get
+            {
+                if (maxThreads <= 0)
+                {
+                    return Math.Max(1, Math.Min(GenThreading.ProcessorCount - 2, 16));
+                }
+                return Math.Max(1, Math.Min(maxThreads, 64));
+            }
+        }
+
+        public override void ExposeData()
+        {
+            base.ExposeData();
+            Scribe_Values.Look(ref maxThreads, "maxThreads", -1);
+            Scribe_Values.Look(ref parallelFlecks, "parallelFlecks", true);
+            Scribe_Values.Look(ref parallelFleckDraw, "parallelFleckDraw", true);
+            Scribe_Values.Look(ref fleckThreshold, "fleckThreshold", 200);
+            Scribe_Collections.Look(ref moddedFleckSystems, "moddedFleckSystems", LookMode.Value, LookMode.Value);
+            if (Scribe.mode == LoadSaveMode.PostLoadInit && moddedFleckSystems == null)
+            {
+                moddedFleckSystems = new Dictionary<string, bool>();
+            }
+            Scribe_Values.Look(ref threadSafeRand, "threadSafeRand", true);
+            Scribe_Values.Look(ref marshalSounds, "marshalSounds", true);
+            Scribe_Values.Look(ref parallelTargeting, "parallelTargeting", true);
+            Scribe_Values.Look(ref targetingThreshold, "targetingThreshold", 8);
+#if TTR_MERGED
+            if (fpsSettings == null)
+            {
+                fpsSettings = new FPSPlus.FPSPlusSettings();
+            }
+            fpsSettings.ExposeData();
+#endif
+        }
+    }
+
+    public class TTRMod : Mod
+    {
+        public static TTRMod Instance;
+        public TTRSettings settings;
+
+        public TTRMod(ModContentPack content)
+            : base(content)
+        {
+            Instance = this;
+            settings = GetSettings<TTRSettings>();
+#if TTR_MERGED
+            // hand the embedded FPS+ module its settings object
+            FPSPlus.FPSPlusMod.Raw = settings.fpsSettings;
+#endif
+        }
+
+        public override string SettingsCategory()
+        {
+            return "FPS+ | RimThreaded";
+        }
+
+#if TTR_MERGED
+        private static int settingsTab; // 0 = threading, 1 = FPS+
+#endif
+
+        public override void DoSettingsWindowContents(Rect inRect)
+        {
+#if TTR_MERGED
+            FPSPlus.SettingsUI.DrawBackground(inRect);
+            string[] topTabs = { "Threading", "FPS+ (performance)" };
+            for (int i = 0; i < topTabs.Length; i++)
+            {
+                Rect tr = new Rect(inRect.x + i * 230f, inRect.y, 224f, 30f);
+                Widgets.DrawOptionBackground(tr, settingsTab == i);
+                Text.Anchor = TextAnchor.MiddleCenter;
+                Widgets.Label(tr, topTabs[i]);
+                Text.Anchor = TextAnchor.UpperLeft;
+                if (Widgets.ButtonInvisible(tr))
+                {
+                    settingsTab = i;
+                }
+            }
+            Rect body = new Rect(inRect.x, inRect.y + 38f, inRect.width, inRect.height - 38f);
+            if (settingsTab == 1)
+            {
+                FPSPlus.SettingsUI.Draw(body);
+                base.DoSettingsWindowContents(inRect);
+                return;
+            }
+            FPSPlus.SettingsUI.GlassPanelPublic(body);
+            inRect = body.ContractedBy(10f);
+#endif
+            Listing_Standard listing = new Listing_Standard();
+            listing.Begin(inRect);
+
+            listing.Label("Worker threads: " + (settings.maxThreads <= 0 ? ("Auto (" + settings.MaxThreadsClamped + ")") : settings.maxThreads.ToString()));
+            settings.maxThreads = (int)listing.Slider(settings.maxThreads <= 0 ? 0f : (float)settings.maxThreads, 0f, 16f);
+            if (settings.maxThreads == 0)
+            {
+                settings.maxThreads = -1;
+            }
+            listing.GapLine();
+
+            listing.CheckboxLabeled("Parallel fleck simulation", ref settings.parallelFlecks,
+                "Simulate visual particles (flecks: rain splashes, smoke, sparks...) on multiple threads when there are many of them.");
+            listing.CheckboxLabeled("Parallel fleck drawing", ref settings.parallelFleckDraw,
+                "Draw static particles (rain splashes, impacts...) on multiple threads. Vanilla already does this for thrown particles like smoke; this extends it to the rest.");
+            if (settings.parallelFlecks || settings.parallelFleckDraw)
+            {
+                listing.Label("  Minimum fleck count before going parallel: " + settings.fleckThreshold);
+                settings.fleckThreshold = (int)listing.Slider((float)settings.fleckThreshold, 50f, 2000f);
+
+                listing.Gap();
+                listing.Label("Particle systems from other mods (OFF by default - enable one by one, at your own risk):");
+                if (FleckRegistry.moddedSystems.Count == 0)
+                {
+                    listing.Label("  (none detected in your mod list)");
+                }
+                else
+                {
+                    for (int i = 0; i < FleckRegistry.moddedSystems.Count; i++)
+                    {
+                        ModdedFleckSystemEntry entry = FleckRegistry.moddedSystems[i];
+                        bool enabled = settings.IsModdedSystemEnabled(entry.settingsKey);
+                        bool before = enabled;
+                        listing.CheckboxLabeled("  " + entry.label, ref enabled,
+                            "Run this mod's particles in parallel too. Its code was not written for threading - if problems appear, turn this off. Applies instantly, no restart needed.");
+                        if (enabled != before)
+                        {
+                            settings.SetModdedSystemEnabled(entry.settingsKey, enabled);
+                        }
+                    }
+                }
+            }
+            listing.GapLine();
+
+            listing.CheckboxLabeled("Thread-safe random numbers (restart required)", ref settings.threadSafeRand,
+                "Gives every background thread its own random number stream so parallel code cannot corrupt the game's main random state. Needed by parallel flecks; also protects other mods that use background threads.");
+            listing.CheckboxLabeled("Redirect off-thread sounds to main thread (restart required)", ref settings.marshalSounds,
+                "If any code tries to play a sound from a background thread, queue it to play safely on the main thread instead of crashing Unity's audio.");
+
+            listing.GapLine();
+            listing.Label("Changes to the last two options apply after restarting the game.");
+
+            listing.GapLine();
+            string simStatus = FleckRegistry.runtimeDisabled ? "OFF (safety switch)" : "OK";
+            string drawStatus = FleckRegistry.drawRuntimeDisabled ? "OFF (safety switch)" : "OK";
+            listing.Label("This session: " + FleckRegistry.parallelRunCount + " parallel simulation batches ("
+                + simStatus + "), " + FleckRegistry.drawParallelRunCount + " parallel draw batches (" + drawStatus + ").");
+            listing.Label("Counters grow during storms, fires and big fights - that is the mod working.");
+
+            listing.End();
+            base.DoSettingsWindowContents(inRect);
+        }
+    }
+}

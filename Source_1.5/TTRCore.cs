@@ -1,0 +1,96 @@
+using System;
+using HarmonyLib;
+using RimWorld;
+using Verse;
+using Verse.Sound;
+
+namespace RimThreadedTTR
+{
+    /// <summary>
+    /// Patch bootstrap. Runs after all defs are loaded (StaticConstructorOnStartup),
+    /// which is required because fleck system registration reads DefDatabase.
+    /// </summary>
+    [StaticConstructorOnStartup]
+    public static class TTRCore
+    {
+        static TTRCore()
+        {
+            try
+            {
+                TTRSettings settings = TTRMod.Instance.settings;
+                Harmony harmony = new Harmony("boksu.rimthreadedttr");
+
+                if (settings.threadSafeRand)
+                {
+                    PatchRand(harmony);
+                }
+                if (settings.marshalSounds)
+                {
+                    PatchSounds(harmony);
+                }
+                FleckRegistry.RegisterAndPatchAll(harmony);
+                // Parallel combat targeting was prototyped and benchmarked here
+                // (TargetingPatches). Controlled micro-benchmark on 1.6.4871
+                // measured 0.98x - a slight regression - because only the
+                // line-of-sight filter can be threaded safely while the
+                // expensive friendly-fire scoring cannot (it uses Verb's shared
+                // static buffers), and fork-join overhead exceeds the small LOS
+                // gain at realistic candidate counts. Left unwired on purpose;
+                // see PORTING_NOTES.md.
+                PatchDrainHook(harmony);
+
+                Log.Message("[RimThreadedTTR] Initialized. Worker threads: " + settings.MaxThreadsClamped
+                    + ", thread-safe Rand: " + settings.threadSafeRand
+                    + ", sound marshaling: " + settings.marshalSounds
+                    + ", parallel flecks: " + settings.parallelFlecks + ".");
+            }
+            catch (Exception ex)
+            {
+                Log.Error("[RimThreadedTTR] Initialization failed: " + ex);
+            }
+        }
+
+        private static void PatchRand(Harmony harmony)
+        {
+            Type rand = typeof(Rand);
+            Type patches = typeof(RandPatches);
+
+            harmony.Patch(AccessTools.PropertyGetter(rand, "Value"),
+                new HarmonyMethod(patches.GetMethod("ValuePrefix")), null, null, null);
+            harmony.Patch(AccessTools.PropertyGetter(rand, "Int"),
+                new HarmonyMethod(patches.GetMethod("IntPrefix")), null, null, null);
+            harmony.Patch(AccessTools.PropertySetter(rand, "Seed"),
+                new HarmonyMethod(patches.GetMethod("SeedPrefix")), null, null, null);
+            harmony.Patch(AccessTools.Method(rand, "PushState", Type.EmptyTypes),
+                new HarmonyMethod(patches.GetMethod("PushStatePrefix")), null, null, null);
+            harmony.Patch(AccessTools.Method(rand, "PushState", new Type[] { typeof(int) }),
+                new HarmonyMethod(patches.GetMethod("PushStateSeedPrefix")), null, null, null);
+            harmony.Patch(AccessTools.Method(rand, "PopState", Type.EmptyTypes),
+                new HarmonyMethod(patches.GetMethod("PopStatePrefix")), null, null, null);
+        }
+
+        private static void PatchSounds(Harmony harmony)
+        {
+            Type starter = typeof(SoundStarter);
+            Type patches = typeof(SoundPatches);
+
+            harmony.Patch(AccessTools.Method(starter, "PlayOneShot"),
+                new HarmonyMethod(patches.GetMethod("PlayOneShotPrefix")), null, null, null);
+            harmony.Patch(AccessTools.Method(starter, "PlayOneShotOnCamera"),
+                new HarmonyMethod(patches.GetMethod("PlayOneShotOnCameraPrefix")), null, null, null);
+        }
+
+        private static void PatchDrainHook(Harmony harmony)
+        {
+            // Safety net: drain the main-thread queue once per frame during play,
+            // in case something was queued outside our own parallel sections.
+            harmony.Patch(AccessTools.Method(typeof(TickManager), "TickManagerUpdate"),
+                null, new HarmonyMethod(typeof(TTRCore).GetMethod("DrainPostfix")), null, null);
+        }
+
+        public static void DrainPostfix()
+        {
+            MainThreadQueue.Drain();
+        }
+    }
+}
