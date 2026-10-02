@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+	<name>RimThreaded TTR (Continued)</name>
+	<author>LuniX (original) / uitstalie (continued)</author>
+	<packageId>uitstalie.rimthreadedttr.continued</packageId>
+	<supportedVersions>
+		<li>1.6</li>
+	</supportedVersions>
+	<description>从 LuniX 的 FPS+ / RimThreaded TTR 源码续作：真多线程（GenThreading + MainThreadQueue）与缓存/节流补丁。本仓为 uitstalie 的续作 fork。</description>
+	<modDependencies>
+		<li><packageId>brrainz.harmony</packageId><displayName>Harmony</displayName></li>
+	</modDependencies>
+</ModMetaData>

@@ -75,7 +75,7 @@ namespace RimThreadedTTR
             vanillaAssembly = typeof(Verb).Assembly;
             verifyMode = GenCommandLine.CommandLineArgPassed("ttrverifytargeting");
             MethodInfo scoreMethod = AccessTools.Method(typeof(AttackTargetFinder), "GetShootingTargetScore");
-            scoreTarget = AccessTools.MethodDelegate<ScoreDelegate>(scoreMethod, null, true, null);
+            scoreTarget = AccessTools.MethodDelegate<ScoreDelegate>(scoreMethod, null, true);
 
             MethodInfo targetMethod = AccessTools.Method(typeof(AttackTargetFinder), "GetAvailableShootingTargetsByScore");
             harmony.Patch(targetMethod,
