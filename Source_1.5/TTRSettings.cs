@@ -53,7 +53,7 @@ namespace RimThreadedTTR
 
         // ── Pawn 子系统并行 ──
         /// <summary>并行结算每小人的 Equipment/NativeVerbs 等自包含子系统（每 tick 单次大批量派发）。</summary>
-        public bool parallelPawnTicks = true;
+        public bool parallelPawnTicks = false;
         /// <summary>是否把 HealthTick 也并行（**损伤可致死会改地图**，默认关）。</summary>
         public bool parallelPawnHealth = false;
 
@@ -95,7 +95,7 @@ namespace RimThreadedTTR
             Scribe_Values.Look(ref throttleSimulation, "throttleSimulation", true);
             Scribe_Values.Look(ref throttleVisual, "throttleVisual", true);
             Scribe_Values.Look(ref throttleMood, "throttleMood", false);
-            Scribe_Values.Look(ref parallelPawnTicks, "parallelPawnTicks", true);
+            Scribe_Values.Look(ref parallelPawnTicks, "parallelPawnTicks", false);
             Scribe_Values.Look(ref parallelPawnHealth, "parallelPawnHealth", false);
             Scribe_Values.Look(ref targetingThreshold, "targetingThreshold", 8);
 #if TTR_MERGED
