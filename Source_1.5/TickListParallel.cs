@@ -31,6 +31,10 @@ namespace RimThreadedTTR
 
         /// <summary>运行时开关文件：存在 ⇒ 停用并行（回到原版），便于**同一次会话内**做 A/B。</summary>
         public const string DisableFlagPath = "/tmp/ttr-p2-off";
+        public const string WorkersFlagPath = "/tmp/ttr-workers";
+        public const string IncludeAllFlagPath = "/tmp/ttr-p2-all";
+        public static int DefaultWorkers = 14;
+        public static bool DefaultKeepPawnBuildingSerial = true;
         public static bool SettingsDefault;
         private static int checkCountdown = 1;
 
@@ -86,7 +90,24 @@ namespace RimThreadedTTR
             {
                 checkCountdown = 600;
                 bool on = SettingsDefault;
-                try { if (System.IO.File.Exists(DisableFlagPath)) on = false; } catch { }
+                try
+                {
+                    if (System.IO.File.Exists(DisableFlagPath)) on = false;
+                    if (System.IO.File.Exists(IncludeAllFlagPath)) KeepPawnBuildingSerial = false;
+                    else KeepPawnBuildingSerial = DefaultKeepPawnBuildingSerial;
+                    int w;
+                    if (System.IO.File.Exists(WorkersFlagPath)
+                        && int.TryParse(System.IO.File.ReadAllText(WorkersFlagPath).Trim(), out w)
+                        && w >= 1 && w <= 32)
+                    {
+                        Workers = w;
+                    }
+                    else
+                    {
+                        Workers = DefaultWorkers;
+                    }
+                }
+                catch { }
                 Enabled = on;
             }
             if (!Enabled || __instance == null) return true;

@@ -67,6 +67,8 @@ namespace RimThreadedTTR
                 {
                     TickListParallel.Enabled = true;
                     TickListParallel.SettingsDefault = true;
+                    TickListParallel.DefaultWorkers = TickListParallel.Workers;
+                    TickListParallel.DefaultKeepPawnBuildingSerial = TickListParallel.KeepPawnBuildingSerial;
                     TickListParallel.Workers = settings.MaxThreadsClamped;
                     TickListParallel.MinItems = settings.tickListMinItems;
                     TickListParallel.KeepPawnBuildingSerial = settings.tickListKeepPawnBuildingSerial;
