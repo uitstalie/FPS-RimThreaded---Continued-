@@ -20,21 +20,21 @@ namespace FPSPlus
         public bool slowSpecialScans = true;
 
         // gameplay-affecting options (clearly separated in the settings UI)
-        public bool animalWanderThrottle = true;
+        public bool animalWanderThrottle = false;
         public int animalWanderMult = 4;
-        public bool junkCleanup = true;
-        public bool cleanFilth = true;
-        public bool cleanFilthEverywhere = true;
+        public bool junkCleanup = false;
+        public bool cleanFilth = false;
+        public bool cleanFilthEverywhere = false;
         public bool cleanChunks = false;
         public bool cleanCorpses = false;
-        public bool workScanCooldown = true;
+        public bool workScanCooldown = false;
         public int workScanCooldownTicks = 120;
         public bool capRaids = false;
         public float raidPointsCap = 4000f;
         public bool wildlifeReduce = false;
         public float wildlifeMult = 0.5f;
         public bool zoomDetail = true;
-        public bool worldPawnCleanup = true;
+        public bool worldPawnCleanup = false;
         public bool designationBatch = true;
         public bool haulStorageMemory = true;
         public bool wealthStretch = true;
@@ -82,7 +82,7 @@ namespace FPSPlus
             Scribe_Values.Look(ref overlayRefreshFrames, "overlayRefreshFrames", 10);
             Scribe_Values.Look(ref textCache, "textCache", true);
             Scribe_Values.Look(ref slowSpecialScans, "slowSpecialScans", true);
-            Scribe_Values.Look(ref worldPawnCleanup, "worldPawnCleanup", true);
+            Scribe_Values.Look(ref worldPawnCleanup, "worldPawnCleanup", false);
             Scribe_Values.Look(ref designationBatch, "designationBatch", true);
             Scribe_Values.Look(ref haulStorageMemory, "haulStorageMemory", true);
             Scribe_Values.Look(ref wealthStretch, "wealthStretch", true);
@@ -113,14 +113,14 @@ namespace FPSPlus
                 throttledComponents = new Dictionary<string, bool>();
             }
             Scribe_Values.Look(ref ignoreConflictGuard, "ignoreConflictGuard", false);
-            Scribe_Values.Look(ref animalWanderThrottle, "animalWanderThrottle", true);
+            Scribe_Values.Look(ref animalWanderThrottle, "animalWanderThrottle", false);
             Scribe_Values.Look(ref animalWanderMult, "animalWanderMult", 4);
-            Scribe_Values.Look(ref junkCleanup, "junkCleanup", true);
-            Scribe_Values.Look(ref cleanFilth, "cleanFilth", true);
-            Scribe_Values.Look(ref cleanFilthEverywhere, "cleanFilthEverywhere", true);
+            Scribe_Values.Look(ref junkCleanup, "junkCleanup", false);
+            Scribe_Values.Look(ref cleanFilth, "cleanFilth", false);
+            Scribe_Values.Look(ref cleanFilthEverywhere, "cleanFilthEverywhere", false);
             Scribe_Values.Look(ref cleanChunks, "cleanChunksV2", false);
             Scribe_Values.Look(ref cleanCorpses, "cleanCorpsesV2", false);
-            Scribe_Values.Look(ref workScanCooldown, "workScanCooldown", true);
+            Scribe_Values.Look(ref workScanCooldown, "workScanCooldown", false);
             Scribe_Values.Look(ref workScanCooldownTicks, "workScanCooldownTicks", 120);
             Scribe_Values.Look(ref capRaids, "capRaids", false);
             Scribe_Values.Look(ref raidPointsCap, "raidPointsCap", 4000f);
