@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using HarmonyLib;
 using RimWorld;
 using Verse;
@@ -13,6 +14,38 @@ namespace RimThreadedTTR
     [StaticConstructorOnStartup]
     public static class TTRCore
     {
+        private static void PatchPawnParallel(Harmony harmony)
+        {
+            int ok = 0;
+            MethodInfo finalizer = AccessTools.Method(typeof(PawnParallel), "Flush");
+            ok += TryPatchPawn(harmony, typeof(Pawn_EquipmentTracker), "EquipmentTrackerTick",
+                AccessTools.Method(typeof(PawnParallel), "Collect_Equip"));
+            ok += TryPatchPawn(harmony, typeof(Pawn_NativeVerbs), "NativeVerbsTick",
+                AccessTools.Method(typeof(PawnParallel), "Collect_Native"));
+            if (PawnParallel.IncludeHealth)
+            {
+                ok += TryPatchPawn(harmony, typeof(Pawn_HealthTracker), "HealthTick",
+                    AccessTools.Method(typeof(PawnParallel), "Collect_Health"));
+            }
+            // 结算点：MapPostTick 之后
+            MethodInfo post = AccessTools.Method(typeof(Map), "MapPostTick", Type.EmptyTypes);
+            if (post != null)
+            {
+                harmony.Patch(post, null, new HarmonyMethod(finalizer), null, null);
+                ok++;
+            }
+            Log.Message("[RimThreadedTTR] Pawn 并行补丁：" + ok + " 项生效（Health=" + PawnParallel.IncludeHealth
+                + " 线程=" + PawnParallel.Workers + "）");
+        }
+
+        private static int TryPatchPawn(Harmony harmony, Type type, string method, MethodInfo prefix)
+        {
+            MethodInfo target = AccessTools.Method(type, method, Type.EmptyTypes);
+            if (target == null || prefix == null) return 0;
+            harmony.Patch(target, new HarmonyMethod(prefix), null, null, null);
+            return 1;
+        }
+
         static TTRCore()
         {
             try
@@ -29,6 +62,13 @@ namespace RimThreadedTTR
                     PatchSounds(harmony);
                 }
                 ThrottlePatches.Apply(harmony, settings);
+                if (settings.parallelPawnTicks && PawnParallel.Init())
+                {
+                    PawnParallel.Enabled = true;
+                    PawnParallel.Workers = settings.MaxThreadsClamped;
+                    PawnParallel.IncludeHealth = settings.parallelPawnHealth;
+                    PatchPawnParallel(harmony);
+                }
                 FleckRegistry.RegisterAndPatchAll(harmony);
                 // Parallel combat targeting was prototyped and benchmarked here
                 // (TargetingPatches). Controlled micro-benchmark on 1.6.4871
