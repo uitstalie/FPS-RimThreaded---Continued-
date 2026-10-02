@@ -53,6 +53,14 @@ namespace RimThreadedTTR
         /// <summary>探针：统计每 tick 的 Thing.DoTick 次数（P2 决策用，测量后应关闭）。</summary>
         public bool probeDoTick = false;
 
+        // ── P2：TickList 主循环切片并行 ──
+        /// <summary>TickList 主循环循环级并行（零逐调用拦截）。</summary>
+        public bool parallelTickList = false;
+        /// <summary>小于该数量的小批直接串行（避免小批次负收益）。</summary>
+        public int tickListMinItems = 32;
+        /// <summary>Pawn/Building 保持串行（改地图风险最高；属 P3）。</summary>
+        public bool tickListKeepPawnBuildingSerial = true;
+
         // ── Pawn 子系统并行 ──
         /// <summary>并行结算每小人的 Equipment/NativeVerbs 等自包含子系统（每 tick 单次大批量派发）。</summary>
         public bool parallelPawnTicks = false;

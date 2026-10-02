@@ -63,6 +63,21 @@ namespace RimThreadedTTR
                 }
                 ThrottlePatches.Apply(harmony, settings);
                 if (settings.probeDoTick) DoTickProbe.Apply(harmony);
+                if (settings.parallelTickList && TickListParallel.Init())
+                {
+                    TickListParallel.Enabled = true;
+                    TickListParallel.Workers = settings.MaxThreadsClamped;
+                    TickListParallel.MinItems = settings.tickListMinItems;
+                    TickListParallel.KeepPawnBuildingSerial = settings.tickListKeepPawnBuildingSerial;
+                    MethodInfo target = AccessTools.Method(typeof(TickList), "Tick", Type.EmptyTypes);
+                    if (target != null)
+                    {
+                        harmony.Patch(target,
+                            new HarmonyMethod(AccessTools.Method(typeof(TickListParallel), "Tick_Prefix")), null, null, null);
+                        Log.Message("[RimThreadedTTR] P2 TickList 并行已启用（切片循环，Pawn/Building 串行="
+                            + TickListParallel.KeepPawnBuildingSerial + "）");
+                    }
+                }
 
                 // P-1 结论（2026-10-02 实测）：**自建轻量派发器被否决**。
                 //   LiteParallel 1053.4 µs/次  vs  GenThreading.ParallelFor 26.1 µs/次（512 项空任务·14 线程）
