@@ -63,9 +63,10 @@ namespace RimThreadedTTR
                 }
                 ThrottlePatches.Apply(harmony, settings);
 
-                // P-1：轻量派发器（常驻 worker + 自旋）。启动时自测派发开销，作为后续阶段的前提证据。
-                LiteParallel.Start(settings.MaxThreadsClamped);
-                Log.Message("[RimThreadedTTR] 轻量派发器已启动：" + LiteParallel.Benchmark(2000));
+                // P-1 结论（2026-10-02 实测）：**自建轻量派发器被否决**。
+                //   LiteParallel 1053.4 µs/次  vs  GenThreading.ParallelFor 26.1 µs/次（512 项空任务·14 线程）
+                // 14 个 worker 的事件唤醒风暴约 1 ms/次；而原版派发只要 26 µs ⇒ 无需替换。
+                // 保留 LiteParallel.cs 作为记录，默认不启用；后续阶段统一使用 GenThreading.ParallelFor。
                 if (settings.parallelPawnTicks && PawnParallel.Init())
                 {
                     PawnParallel.Enabled = true;
