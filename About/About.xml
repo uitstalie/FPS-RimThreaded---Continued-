@@ -8,6 +8,6 @@
 	</supportedVersions>
 	<description>从 LuniX 的 FPS+ / RimThreaded TTR 源码续作：真多线程（GenThreading + MainThreadQueue）与缓存/节流补丁。本仓为 uitstalie 的续作 fork。</description>
 	<modDependencies>
-		<li><packageId>brrainz.harmony</packageId><displayName>Harmony</displayName></li>
+		<li><packageId>brrainz.harmony</packageId><displayName>Harmony</displayName><steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl></li>
 	</modDependencies>
 </ModMetaData>

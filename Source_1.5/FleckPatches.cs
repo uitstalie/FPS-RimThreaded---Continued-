@@ -35,6 +35,22 @@ namespace RimThreadedTTR
 
     public static class FleckRegistry
     {
+        private static readonly System.Collections.Concurrent.ConcurrentBag<List<int>> removeListPool =
+            new System.Collections.Concurrent.ConcurrentBag<List<int>>();
+
+        public static List<int> RentRemoveList()
+        {
+            List<int> l;
+            return removeListPool.TryTake(out l) ? l : new List<int>();
+        }
+
+        public static void ReturnRemoveList(List<int> l)
+        {
+            if (l == null) return;
+            l.Clear();
+            removeListPool.Add(l);
+        }
+
         // System types eligible for parallel simulation, with a flag for
         // whether the type is from the vanilla assembly.
         public static readonly Dictionary<Type, bool> eligibleSystems = new Dictionary<Type, bool>();
@@ -58,6 +74,17 @@ namespace RimThreadedTTR
 
         public static void RegisterAndPatchAll(Harmony harmony)
         {
+            // ── Linux/Mono 适配 ──
+            // 这里 patch 的是 **闭合泛型基类** FleckSystemBase<T> 上的方法。MonoMod 在 Mono 上
+            // 为闭合泛型建 detour 时会让 **Mono 原生 abort**（Caught fatal signal signo:5），
+            // try/catch 完全兜不住（Windows/.NET 上无此问题）。故 Mono 下直接跳过这一组补丁，
+            // 其余缓存/节流补丁照常。
+            if (TTRPlatform.IsMono)
+            {
+                Log.Message("[RimThreadedTTR] 运行在 Mono 上：跳过 Fleck 闭合泛型补丁（避免 Mono 原生终止）。");
+                return;
+            }
+
             Assembly vanillaAssembly = typeof(FleckSystem).Assembly;
             HashSet<Type> seenSystems = new HashSet<Type>();
             HashSet<MethodBase> patchedMethods = new HashSet<MethodBase>();
@@ -295,7 +322,7 @@ namespace RimThreadedTTR
                     {
                         if (removes == null)
                         {
-                            removes = new List<int>();
+                            removes = FleckRegistry.RentRemoveList();
                         }
                         removes.Add(i);
                     }
@@ -321,6 +348,7 @@ namespace RimThreadedTTR
                     }
                     merged.AddRange(part);
                 }
+                FleckRegistry.ReturnRemoveList(part);   // 归还池，减少 Mono(Boehm) 跨线程分配压力
             }
             if (merged != null)
             {

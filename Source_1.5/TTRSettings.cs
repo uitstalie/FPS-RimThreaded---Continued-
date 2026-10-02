@@ -55,7 +55,9 @@ namespace RimThreadedTTR
             {
                 if (maxThreads <= 0)
                 {
-                    return Math.Max(1, Math.Min(GenThreading.ProcessorCount - 2, 16));
+                    // 用 **P 核线程数**（不是逻辑核总数）：混核 CPU（如 i7-14700K：16 P 线程 + 12 E 线程）
+                    // 上多出来的 E 核慢约 1.7 倍，把它们拉进 worker 只会让最慢的那条决定整批耗时。
+                    return Math.Max(1, Math.Min(TTRPlatform.PerformanceThreadCount - 2, 16));
                 }
                 return Math.Max(1, Math.Min(maxThreads, 64));
             }
