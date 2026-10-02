@@ -62,6 +62,7 @@ namespace RimThreadedTTR
                     PatchSounds(harmony);
                 }
                 ThrottlePatches.Apply(harmony, settings);
+                if (settings.probeDoTick) DoTickProbe.Apply(harmony);
 
                 // P-1 结论（2026-10-02 实测）：**自建轻量派发器被否决**。
                 //   LiteParallel 1053.4 µs/次  vs  GenThreading.ParallelFor 26.1 µs/次（512 项空任务·14 线程）

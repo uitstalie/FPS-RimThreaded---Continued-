@@ -50,6 +50,8 @@ namespace RimThreadedTTR
         public bool throttleVisual = true;
         /// <summary>心情需求每 2 次结算（**改玩法节奏**，默认关）。</summary>
         public bool throttleMood = false;
+        /// <summary>探针：统计每 tick 的 Thing.DoTick 次数（P2 决策用，测量后应关闭）。</summary>
+        public bool probeDoTick = true;
 
         // ── Pawn 子系统并行 ──
         /// <summary>并行结算每小人的 Equipment/NativeVerbs 等自包含子系统（每 tick 单次大批量派发）。</summary>
