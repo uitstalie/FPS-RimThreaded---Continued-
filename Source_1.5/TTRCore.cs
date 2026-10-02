@@ -62,6 +62,10 @@ namespace RimThreadedTTR
                     PatchSounds(harmony);
                 }
                 ThrottlePatches.Apply(harmony, settings);
+
+                // P-1：轻量派发器（常驻 worker + 自旋）。启动时自测派发开销，作为后续阶段的前提证据。
+                LiteParallel.Start(settings.MaxThreadsClamped);
+                Log.Message("[RimThreadedTTR] 轻量派发器已启动：" + LiteParallel.Benchmark(2000));
                 if (settings.parallelPawnTicks && PawnParallel.Init())
                 {
                     PawnParallel.Enabled = true;
