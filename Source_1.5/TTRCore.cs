@@ -28,6 +28,7 @@ namespace RimThreadedTTR
                 {
                     PatchSounds(harmony);
                 }
+                ThrottlePatches.Apply(harmony, settings);
                 FleckRegistry.RegisterAndPatchAll(harmony);
                 // Parallel combat targeting was prototyped and benchmarked here
                 // (TargetingPatches). Controlled micro-benchmark on 1.6.4871

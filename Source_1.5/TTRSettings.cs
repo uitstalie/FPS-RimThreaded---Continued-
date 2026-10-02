@@ -43,6 +43,14 @@ namespace RimThreadedTTR
         public bool parallelTargeting = true;
         public int targetingThreshold = 8;
 
+        // ── 降频（实测约 −200 µs/tick；默认只开"不影响数值"的部分）──
+        /// <summary>风（纯风味/涡轮读数）每 4 tick；气体扩散、搬运清单每 2 tick。</summary>
+        public bool throttleSimulation = true;
+        /// <summary>纯视觉：Effecter 维护与小人特效每 2 tick。</summary>
+        public bool throttleVisual = true;
+        /// <summary>心情需求每 2 次结算（**改玩法节奏**，默认关）。</summary>
+        public bool throttleMood = false;
+
 #if TTR_MERGED
         // v1.2: the FPS+ module's settings live inside this mod's settings,
         // persisted in the same file. One mod, one settings entry.
@@ -78,6 +86,9 @@ namespace RimThreadedTTR
             Scribe_Values.Look(ref threadSafeRand, "threadSafeRand", true);
             Scribe_Values.Look(ref marshalSounds, "marshalSounds", true);
             Scribe_Values.Look(ref parallelTargeting, "parallelTargeting", true);
+            Scribe_Values.Look(ref throttleSimulation, "throttleSimulation", true);
+            Scribe_Values.Look(ref throttleVisual, "throttleVisual", true);
+            Scribe_Values.Look(ref throttleMood, "throttleMood", false);
             Scribe_Values.Look(ref targetingThreshold, "targetingThreshold", 8);
 #if TTR_MERGED
             if (fpsSettings == null)
