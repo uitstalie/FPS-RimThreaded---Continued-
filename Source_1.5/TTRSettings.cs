@@ -55,7 +55,7 @@ namespace RimThreadedTTR
 
         // ── P2：TickList 主循环切片并行 ──
         /// <summary>TickList 主循环循环级并行（零逐调用拦截）。</summary>
-        public bool parallelTickList = false;
+        public bool parallelTickList = true;
         /// <summary>小于该数量的小批直接串行（避免小批次负收益）。</summary>
         public int tickListMinItems = 32;
         /// <summary>Pawn/Building 保持串行（改地图风险最高；属 P3）。</summary>

@@ -29,6 +29,11 @@ namespace RimThreadedTTR
         public static int MinItems = 32;
         public static bool KeepPawnBuildingSerial = true;
 
+        /// <summary>运行时开关文件：存在 ⇒ 停用并行（回到原版），便于**同一次会话内**做 A/B。</summary>
+        public const string DisableFlagPath = "/tmp/ttr-p2-off";
+        public static bool SettingsDefault;
+        private static int checkCountdown = 1;
+
         public static long Batches;
         public static long Items;
         public static long SerialFallbacks;
@@ -77,6 +82,13 @@ namespace RimThreadedTTR
         /// <summary>前缀：返回 false 表示我们自己跑完了，跳过原版。</summary>
         public static bool Tick_Prefix(TickList __instance)
         {
+            if (--checkCountdown <= 0)                       // 每 ~600 tick 复查一次开关文件
+            {
+                checkCountdown = 600;
+                bool on = SettingsDefault;
+                try { if (System.IO.File.Exists(DisableFlagPath)) on = false; } catch { }
+                Enabled = on;
+            }
             if (!Enabled || __instance == null) return true;
             if (DebugSettings.fastEcology) return true;          // 开发用分支：直接交回原版
             try
