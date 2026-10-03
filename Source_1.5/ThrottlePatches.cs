@@ -46,6 +46,14 @@ namespace RimThreadedTTR
             return pawn != null && pawn.RaceProps != null && pawn.RaceProps.Animal && pawn.Faction == null;
         }
 
+        /// <summary>睡觉小人的 JobDriver 每 2 tick（其余 JobDriver 不受影响）。</summary>
+        public static bool LayDown_Prefix(Verse.AI.JobDriver __instance)
+        {
+            if (!(__instance is RimWorld.JobDriver_LayDown)) return true;
+            TickManager tm = Find.TickManager;
+            return tm == null || (tm.TicksGame & 1) == 0;
+        }
+
         public static bool WildMind_Prefix(Verse.AI.Pawn_MindState __instance)
         {
             if (!IsWildAnimal(__instance.pawn)) return true;
@@ -80,7 +88,13 @@ namespace RimThreadedTTR
             }
             if (s.throttleLayDown)
             {
-                ok += Patch(harmony, "RimWorld.JobDriver_LayDown", "DriverTick", Type.EmptyTypes, "Every2");
+                // JobDriver_LayDown 没有实现 DriverTick（继承自 JobDriver）⇒ 挂基类，前缀里只对 LayDown 生效
+                MethodInfo driverTick = AccessTools.Method(typeof(Verse.AI.JobDriver), "DriverTick", Type.EmptyTypes);
+                if (driverTick != null)
+                {
+                    harmony.Patch(driverTick, new HarmonyMethod(typeof(ThrottlePatches).GetMethod("LayDown_Prefix")), null, null, null);
+                    ok++;
+                }
             }
             if (s.throttleStoryteller)
             {
