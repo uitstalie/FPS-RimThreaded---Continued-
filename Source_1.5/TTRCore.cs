@@ -82,9 +82,9 @@ namespace RimThreadedTTR
                         Log.Message("[RimThreadedTTR] S1b 音频编组：SustainerManager.UpdateAllSustainerScopes 仅主线程执行");
                     }
                 }
-                if (false)
+                if (settings.marshalSounds)
                 {
-                    PatchSounds(harmony);
+                    PatchSounds(harmony);      // 原有：PlayOneShot 编组（不能被误关）
                 }
                 ThrottlePatches.Apply(harmony, settings);
                 if (settings.probeDoTick) DoTickProbe.Apply(harmony);
