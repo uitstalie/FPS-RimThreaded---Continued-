@@ -1,3 +1,4 @@
+using System.Threading;
 using RimWorld;
 using Verse;
 using Verse.Sound;
@@ -30,6 +31,26 @@ namespace RimThreadedTTR
             });
             return false;
         }
+
+        /// <summary>
+        /// S1 第二半（实测热点 #4）：
+        ///   at Verse.Sound.SustainerManager.UpdateAllSustainerScopes ()
+        ///   at Verse.Sound.SoundStarter.TrySpawnSustainer (SoundDef, SoundInfo)
+        ///   at RimWorld.Building_SteamGeyser.StartSpray ()
+        /// `UpdateAllSustainerScopes` 是**主线程每帧都会做一次的**收尾（清扫失效 Sustainer 的作用域），
+        /// worker 调它既多余、又会与主线程并发改 Sustainer 列表 ⇒ 非主线程直接跳过（主线程照常执行）。
+        /// </summary>
+        public static bool UpdateAllSustainerScopesPrefix()
+        {
+            if (UnityData.IsInMainThread)
+            {
+                return true;
+            }
+            Interlocked.Increment(ref SkippedSustainerScopeUpdates);
+            return false;
+        }
+
+        public static long SkippedSustainerScopeUpdates;
 
         // SoundStarter.PlayOneShotOnCamera(this SoundDef, Map)
         public static bool PlayOneShotOnCameraPrefix(SoundDef soundDef, Map onlyThisMap)

@@ -74,6 +74,16 @@ namespace RimThreadedTTR
                 }
                 if (settings.marshalSounds)
                 {
+                    // S1 第二半：Sustainer 收尾仅主线程执行
+                    System.Reflection.MethodInfo sus = AccessTools.Method(typeof(Verse.Sound.SustainerManager), "UpdateAllSustainerScopes", Type.EmptyTypes);
+                    if (sus != null)
+                    {
+                        harmony.Patch(sus, new HarmonyMethod(AccessTools.Method(typeof(SoundPatches), "UpdateAllSustainerScopesPrefix")), null, null, null);
+                        Log.Message("[RimThreadedTTR] S1b 音频编组：SustainerManager.UpdateAllSustainerScopes 仅主线程执行");
+                    }
+                }
+                if (false)
+                {
                     PatchSounds(harmony);
                 }
                 ThrottlePatches.Apply(harmony, settings);
