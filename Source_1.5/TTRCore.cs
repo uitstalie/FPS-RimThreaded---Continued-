@@ -94,6 +94,7 @@ namespace RimThreadedTTR
                     PawnParallel.IncludeHealth = settings.parallelPawnHealth;
                     PatchPawnParallel(harmony);
                 }
+                if (settings.hediffLock) HediffLock.Apply(harmony);
                 FleckRegistry.RegisterAndPatchAll(harmony);
                 // Parallel combat targeting was prototyped and benchmarked here
                 // (TargetingPatches). Controlled micro-benchmark on 1.6.4871
