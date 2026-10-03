@@ -210,6 +210,21 @@ namespace RimThreadedTTR
             DoTickThing(parallelPart[i]);
         }
 
+        /// <summary>天花板实验：跳过 Pawn/Building 的 tick（仅测量 TPS 上限，会破坏游戏状态）。</summary>
+        public static bool SkipPawnBuilding;
+        public static long SkippedPawnBuilding;
+
+        private static bool ShouldSkip(Thing t)
+        {
+            if (!SkipPawnBuilding) return false;
+            if (t is Pawn || t is Building)
+            {
+                SkippedPawnBuilding++;
+                return true;
+            }
+            return false;
+        }
+
         private static void DoTickThing(Thing t)
         {
             if (t == null || t.Destroyed) return;

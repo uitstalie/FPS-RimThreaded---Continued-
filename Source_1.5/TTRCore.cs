@@ -59,7 +59,13 @@ namespace RimThreadedTTR
                 }
                 catch { }
                 Log.Message("[RimThreadedTTR] TTR BUILD " + stamp + " (assembly mtime, auto)");
-                TTRSettings settings = TTRMod.Instance.settings;
+                try
+            {
+                TickListParallel.SkipPawnBuilding = System.IO.File.Exists("/tmp/ttr-skip-pawn");
+                if (TickListParallel.SkipPawnBuilding) Log.Warning("[RimThreadedTTR] ⚠ 天花板实验：跳过 Pawn/Building tick（仅测量，游戏状态会被破坏）");
+            }
+            catch { }
+            TTRSettings settings = TTRMod.Instance.settings;
                 Harmony harmony = new Harmony("boksu.rimthreadedttr");
 
                 if (settings.threadSafeRand)
