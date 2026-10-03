@@ -42,6 +42,37 @@ namespace RimThreadedTTR
             Collect(paths, seen, typeof(GeneDef), "uiIconPath");
             Collect(paths, seen, typeof(RecipeDef), "uiIconPath");
 
+            // 1b) graphicData.texPath（mote/建筑/物品的实际贴图）—— mote 是"文件夹多图集" ⇒ 还要 GetAllInFolder
+            int folderHits = 0;
+            try
+            {
+                foreach (Type defType in AllDefTypes())
+                {
+                    FieldInfo gd = defType.GetField("graphicData", BindingFlags.Public | BindingFlags.Instance);
+                    if (gd == null) continue;
+                    IList defs = AllDefsOf(defType);
+                    if (defs == null) continue;
+                    for (int i = 0; i < defs.Count; i++)
+                    {
+                        object g = gd.GetValue(defs[i]);
+                        if (g == null) continue;
+                        FieldInfo tp = g.GetType().GetField("texPath", BindingFlags.Public | BindingFlags.Instance);
+                        string path = tp == null ? null : tp.GetValue(g) as string;
+                        if (string.IsNullOrEmpty(path) || !seen.Add("G:" + path)) continue;
+                        paths.Add(path);
+                        try
+                        {
+                            foreach (Texture2D tx in ContentFinder<Texture2D>.GetAllInFolder(path))
+                            {
+                                if (tx != null) folderHits++;
+                            }
+                        }
+                        catch { }
+                    }
+                }
+            }
+            catch (Exception e) { Log.Warning("[RimThreadedTTR] 贴图路径预扫描部分失败: " + e.Message); }
+
             // 2) 通用反射：遍历 DefDatabase 里所有 Def，抓含 icon/tex 的字符串字段（各 mod 自定义 Def 也覆盖）
             try
             {
@@ -85,8 +116,8 @@ namespace RimThreadedTTR
             }
             sw.Stop();
             Ms = sw.Elapsed.TotalMilliseconds;
-            Log.Message("[RimThreadedTTR] S1 资源预加载：" + Loaded + " 张贴图已进主线程缓存（未命中 " + Failed
-                + "，扫描 " + paths.Count + " 条路径，耗时 " + Ms.ToString("F0") + " ms）");
+            Log.Message("[RimThreadedTTR] S1 资源预加载：" + Loaded + " 张贴图已进主线程缓存（另有多图集 " + folderHits
+                + " 张，未命中 " + Failed + "，扫描 " + paths.Count + " 条路径，耗时 " + Ms.ToString("F0") + " ms）");
         }
 
         /// <summary>所有非抽象 Def 子类（含各 mod 自定义 Def）。</summary>
