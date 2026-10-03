@@ -8,7 +8,8 @@ namespace RimThreadedTTR
     public class TTRSettings : ModSettings
     {
         // -1 means "auto" (processor count - 2, min 1)
-        public int maxThreads = 8;   // A: 14 worker 时 P2 让 FPS -7%；8 是折中，可运行时调
+        public int maxThreads = -1;  // A: 回到 auto=14（实测 1.207 vs 8 worker 的 1.310 ms/tick）；FPS/TPS 平衡待同会话 A/B
+        public int maxThreadsAutoReserve = 0;
 
         public bool parallelFlecks = true;
         public bool parallelFleckDraw = true;
