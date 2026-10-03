@@ -50,6 +50,18 @@ namespace RimThreadedTTR
                 ok += Patch(harmony, "RimWorld.EffecterMaintainer", "EffecterMaintainerTick", Type.EmptyTypes, "Every2");
                 ok += Patch(harmony, "Verse.PawnRenderer", "EffectersTick", new[] { typeof(bool) }, "Every2");
             }
+            if (s.throttleDoor)
+            {
+                ok += Patch(harmony, "RimWorld.Building_Door", "Tick", Type.EmptyTypes, "Every2");
+            }
+            if (s.throttleLayDown)
+            {
+                ok += Patch(harmony, "RimWorld.JobDriver_LayDown", "DriverTick", Type.EmptyTypes, "Every2");
+            }
+            if (s.throttleStoryteller)
+            {
+                ok += Patch(harmony, "RimWorld.Storyteller", "StorytellerTick", Type.EmptyTypes, "Every2");
+            }
             if (s.throttleMood)
             {
                 // 玩法节奏相关：默认关。需求（心情）每 2 次才结算一次。
