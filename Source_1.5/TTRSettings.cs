@@ -227,6 +227,30 @@ namespace RimThreadedTTR
             listing.Label("Changes to the last two options apply after restarting the game.");
 
             listing.GapLine();
+            listing.Label("— TickList 并行（P2，我们加的）—");
+            listing.CheckboxLabeled("TickList 主循环切片并行", ref settings.parallelTickList,
+                "把 TickList.Tick 的主循环切片并行（实测同会话 +23% TPS）。只改并行度，不改 tick 速率。");
+            listing.Label("  最小批大小（小于此值走串行）: " + settings.tickListMinItems);
+            settings.tickListMinItems = (int)listing.Slider((float)settings.tickListMinItems, 8f, 512f);
+            listing.CheckboxLabeled("Pawn/Building 保持串行（推荐）", ref settings.tickListKeepPawnBuildingSerial,
+                "取消勾选 = 让 Pawn/Building 也并行。实测会立刻出现 Collection was modified（需 RimThreaded 级线程安全改造）。");
+            listing.Label("  本会话：批次 " + TickListParallel.Batches + " · 对象 " + TickListParallel.Items
+                + (TickListParallel.DisabledByErrors ? " · ⚠ 已因错误自动停用" : ""));
+
+            listing.GapLine();
+            listing.Label("— 降频（Performance-Optimizer 风格）—");
+            listing.CheckboxLabeled("模拟类：风 /4 · 气体 /2 · 搬运清单 /2", ref settings.throttleSimulation,
+                "实测省约 190 µs/tick。风是纯风味；气体扩散与搬运清单刷新频率减半（轻微玩法影响）。");
+            listing.CheckboxLabeled("纯视觉：Effecter / 小人特效 每 2 tick", ref settings.throttleVisual,
+                "实测省约 19 µs/tick，不影响数值。");
+            listing.CheckboxLabeled("心情需求每 2 次结算（改玩法节奏，默认关）", ref settings.throttleMood,
+                "省约 47 µs/tick，但会改变心情变化节奏。");
+
+            listing.GapLine();
+            listing.CheckboxLabeled("实验：Mono 上也启用 Fleck 闭合泛型补丁", ref settings.experimentalFleckOnMono,
+                "实测在 Linux/Mono 上可用（12 方法已打、真实存档 11 分钟 0 崩溃），理论上仍有 Mono 原生终止风险。");
+
+            listing.GapLine();
             string simStatus = FleckRegistry.runtimeDisabled ? "OFF (safety switch)" : "OK";
             string drawStatus = FleckRegistry.drawRuntimeDisabled ? "OFF (safety switch)" : "OK";
             listing.Label("This session: " + FleckRegistry.parallelRunCount + " parallel simulation batches ("
