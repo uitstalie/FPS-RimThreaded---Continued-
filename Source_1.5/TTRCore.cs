@@ -105,9 +105,12 @@ namespace RimThreadedTTR
                 // 设置文件读取路径存在不确定性 ⇒ 同时支持 flag 文件强制开启（与 /tmp/ttr-p2-all 同机制）
                 bool hediffFlag = false;
                 try { hediffFlag = System.IO.File.Exists("/tmp/ttr-hediff"); } catch { }
+                bool regionFlag = false;
+                try { regionFlag = System.IO.File.Exists("/tmp/ttr-region"); } catch { }
                 if (settings.hediffLock || hediffFlag)
                 {
                     HediffLock.Apply(harmony);
+                    if (regionFlag) RegionLock.Apply(harmony);   // 热点 #2：区域系统锁
                 }
                 FleckRegistry.RegisterAndPatchAll(harmony);
                 // Parallel combat targeting was prototyped and benchmarked here
