@@ -38,6 +38,9 @@ namespace RimThreadedTTR
         public static bool SettingsDefault;
         private static int checkCountdown = 1;
 
+        /// <summary>错误过多时自动停用并行（回退原版），防止把游戏搞坏。</summary>
+        public static bool DisabledByErrors;
+        public static long ErrorCount;
         public static long Batches;
         public static long Items;
         public static long SerialFallbacks;
@@ -110,7 +113,7 @@ namespace RimThreadedTTR
                 catch { }
                 Enabled = on;
             }
-            if (!Enabled || __instance == null) return true;
+            if (!Enabled || DisabledByErrors || __instance == null) return true;
             if (DebugSettings.fastEcology) return true;          // 开发用分支：直接交回原版
             try
             {
@@ -204,12 +207,21 @@ namespace RimThreadedTTR
             }
             catch (Exception e)
             {
-                lock (errorGate) { if (errors.Count < 16) errors.Add(e); }
+                lock (errorGate)
+                {
+                    ErrorCount++;
+                    if (errors.Count < 16) errors.Add(e);
+                }
             }
         }
 
         private static void FlushErrors()
         {
+            if (ErrorCount > 20 && !DisabledByErrors)          // 保险：并行 tick 反复出错 ⇒ 自动停用
+            {
+                DisabledByErrors = true;
+                Log.Error("[RimThreadedTTR] 并行 tick 累计出错 " + ErrorCount + " 次，已自动停用并回退原版（游戏继续，但恢复串行）。");
+            }
             if (errors.Count == 0) return;
             Exception first = errors[0];
             int count = errors.Count;
