@@ -53,7 +53,8 @@ namespace RimThreadedTTR
 
         private static readonly List<Thing> parallelPart = new List<Thing>(2048);
         private static readonly List<Thing> serialPart = new List<Thing>(2048);
-        private static readonly List<Exception> errors = new List<Exception>(8);
+        private static readonly List<string> errors = new List<string>(8);
+        private static readonly HashSet<string> errorKinds = new HashSet<string>();
         private static readonly object errorGate = new object();
 
         public static bool Init()
@@ -210,23 +211,36 @@ namespace RimThreadedTTR
                 lock (errorGate)
                 {
                     ErrorCount++;
-                    if (errors.Count < 16) errors.Add(e);
+                    if (errors.Count < 5)
+                    {
+                        // 保留**带堆栈**的多行信息 ⇒ 直接告诉我们是哪一行并发访问了哪个集合
+                        string s = e.GetType().Name + ": " + e.Message + "\n" + (e.StackTrace ?? "(no stack)");
+                        string head = e.GetType().Name + "|" + (e.StackTrace ?? "").Split('\n')[0];
+                        if (errorKinds.Add(head)) errors.Add(s);
+                    }
                 }
             }
         }
 
         private static void FlushErrors()
         {
-            if (ErrorCount > 20 && !DisabledByErrors)          // 保险：并行 tick 反复出错 ⇒ 自动停用
+            if (errors.Count > 0)
+            {
+                System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                sb.Append("[RimThreadedTTR] 并行 tick 异常样本（累计 ").Append(ErrorCount).Append(" 次，")
+                  .Append(errors.Count).Append(" 种）:");
+                for (int i = 0; i < errors.Count; i++)
+                {
+                    sb.Append("\n--- 样本 ").Append(i + 1).Append(" ---\n").Append(errors[i]);
+                }
+                errors.Clear();
+                Log.Error(sb.ToString());     // 带堆栈 ⇒ 直接定位并发访问点
+            }
+            if (ErrorCount > 20 && !DisabledByErrors)          // 保险：反复出错 ⇒ 自动停用
             {
                 DisabledByErrors = true;
                 Log.Error("[RimThreadedTTR] 并行 tick 累计出错 " + ErrorCount + " 次，已自动停用并回退原版（游戏继续，但恢复串行）。");
             }
-            if (errors.Count == 0) return;
-            Exception first = errors[0];
-            int count = errors.Count;
-            errors.Clear();
-            Log.ErrorOnce("[RimThreadedTTR] 并行 tick 抛出 " + count + " 个异常（首个）: " + first, 552312);
         }
     }
 }
