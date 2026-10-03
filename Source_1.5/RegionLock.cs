@@ -50,6 +50,8 @@ namespace RimThreadedTTR
             MethodInfo exit = AccessTools.Method(typeof(RegionLock), "Exit_Finalizer");
             int n = 0;
             n += PatchAll(harmony, "Verse.RegionListersUpdater", new[] { "RegisterInRegions", "DeregisterInRegions" }, enter, exit);
+            // 热点 #5（实测）：RegionTraverser.BreadthFirstTraverse ← PawnUtility.EnemiesAreNearby ← MindStateTickInterval
+            n += PatchAll(harmony, "Verse.RegionTraverser", new[] { "BreadthFirstTraverse" }, enter, exit);
             n += PatchAll(harmony, "Verse.RegionDirtyer", new[] { "Notify_WalkabilityChanged", "Notify_ThingAffectingRegionsSpawned", "Notify_ThingAffectingRegionsDespawned", "SetRegionDirty", "SetAllDirty", "DirtyRegionForThing" }, enter, exit);
             Enabled = true;
             Log.Message("[RimThreadedTTR] 区域系统锁已启用：" + n + " 个方法（RegionListersUpdater + RegionDirtyer）");

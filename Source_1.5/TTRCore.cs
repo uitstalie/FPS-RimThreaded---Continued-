@@ -68,7 +68,11 @@ namespace RimThreadedTTR
             // S1a：主线程预加载所有 Def 的贴图（未命中缓存时 worker 会触发 Unity 跨线程加载）
             try
             {
-                if (System.IO.File.Exists("/tmp/ttr-no-preload") == false) AssetPreloader.Preload();
+                bool pawnParallelMode = System.IO.File.Exists("/tmp/ttr-p2-all") || System.IO.File.Exists("/tmp/ttr-preload");
+                if (pawnParallelMode && System.IO.File.Exists("/tmp/ttr-no-preload") == false)
+                {
+                    AssetPreloader.Preload();
+                }
             }
             catch (Exception exPre) { Log.Warning("[RimThreadedTTR] S1 预加载失败: " + exPre); }
             TTRSettings settings = TTRMod.Instance.settings;
