@@ -153,7 +153,10 @@ namespace FPSPlus
                 }
                 if (owner != null)
                 {
-                    Report.Add(featureName + "  (conflicts with: " + owner + " on " + target.Name + ")");
+                    if (!Ov)   // 用户已强制覆盖时不再报"auto-disabled"，避免误导
+                    {
+                        Report.Add(featureName + "  (conflicts with: " + owner + " on " + target.Name + ")");
+                    }
                     return true;
                 }
             }
