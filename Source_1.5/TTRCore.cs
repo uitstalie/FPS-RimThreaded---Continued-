@@ -102,7 +102,13 @@ namespace RimThreadedTTR
                     PawnParallel.IncludeHealth = settings.parallelPawnHealth;
                     PatchPawnParallel(harmony);
                 }
-                if (settings.hediffLock) HediffLock.Apply(harmony);
+                // 设置文件读取路径存在不确定性 ⇒ 同时支持 flag 文件强制开启（与 /tmp/ttr-p2-all 同机制）
+                bool hediffFlag = false;
+                try { hediffFlag = System.IO.File.Exists("/tmp/ttr-hediff"); } catch { }
+                if (settings.hediffLock || hediffFlag)
+                {
+                    HediffLock.Apply(harmony);
+                }
                 FleckRegistry.RegisterAndPatchAll(harmony);
                 // Parallel combat targeting was prototyped and benchmarked here
                 // (TargetingPatches). Controlled micro-benchmark on 1.6.4871
