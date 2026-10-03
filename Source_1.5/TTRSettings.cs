@@ -8,7 +8,7 @@ namespace RimThreadedTTR
     public class TTRSettings : ModSettings
     {
         // -1 means "auto" (processor count - 2, min 1)
-        public int maxThreads = -1;
+        public int maxThreads = 8;   // A: 14 worker 时 P2 让 FPS -7%；8 是折中，可运行时调
 
         public bool parallelFlecks = true;
         public bool parallelFleckDraw = true;
@@ -52,6 +52,9 @@ namespace RimThreadedTTR
         public bool throttleMood = false;
         /// <summary>探针：统计每 tick 的 Thing.DoTick 次数（P2 决策用，测量后应关闭）。</summary>
         public bool probeDoTick = false;
+
+        /// <summary>C：实验性 —— 在 Mono 上也给 Fleck 闭合泛型基类打补丁（风险：Mono 原生 abort）。</summary>
+        public bool experimentalFleckOnMono = false;
 
         // ── P2：TickList 主循环切片并行 ──
         /// <summary>TickList 主循环循环级并行（零逐调用拦截）。</summary>

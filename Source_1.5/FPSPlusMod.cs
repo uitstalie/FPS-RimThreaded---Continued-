@@ -54,7 +54,7 @@ namespace FPSPlus
         public float overlayX = -1f; // custom drag position (screen fraction); -1 = use corner
         public float overlayY = -1f;
         public bool colonistBarCache = true;
-        public bool reachCache = false; // experimental, off by default
+        public bool reachCache = true;  // B: 已开启（原为 experimental off）
         public bool showFpsGraph = false;
         public bool showTpsGraph = false;
         public bool quickSettingsButton = true;

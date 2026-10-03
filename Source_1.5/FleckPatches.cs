@@ -79,7 +79,9 @@ namespace RimThreadedTTR
             // 为闭合泛型建 detour 时会让 **Mono 原生 abort**（Caught fatal signal signo:5），
             // try/catch 完全兜不住（Windows/.NET 上无此问题）。故 Mono 下直接跳过这一组补丁，
             // 其余缓存/节流补丁照常。
-            if (TTRPlatform.IsMono)
+            bool bypassMonoGuard = TTRMod.Instance != null && TTRMod.Instance.settings != null
+                && TTRMod.Instance.settings.experimentalFleckOnMono;
+            if (TTRPlatform.IsMono && !bypassMonoGuard)
             {
                 Log.Message("[RimThreadedTTR] 运行在 Mono 上：跳过 Fleck 闭合泛型补丁（避免 Mono 原生终止）。");
                 return;
