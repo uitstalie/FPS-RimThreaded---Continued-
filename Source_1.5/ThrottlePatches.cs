@@ -54,16 +54,19 @@ namespace RimThreadedTTR
             return tm == null || (tm.TicksGame & 1) == 0;
         }
 
+        /// <summary>A：是否"所有小人"都降 AI（由设置打开）。</summary>
+        public static bool AllPawnAI;
+
         public static bool WildMind_Prefix(Verse.AI.Pawn_MindState __instance)
         {
-            if (!IsWildAnimal(__instance.pawn)) return true;
+            if (!IsWildAnimal(__instance.pawn) && !AllPawnAI) return true;
             TickManager tm = Find.TickManager;
             return tm == null || (tm.TicksGame & 1) == 0;
         }
 
         public static bool WildPather_Prefix(Verse.AI.Pawn_PathFollower __instance)
         {
-            if (!IsWildAnimal(PatherPawn(__instance))) return true;
+            if (!IsWildAnimal(PatherPawn(__instance)) && !AllPawnAI) return true;
             TickManager tm = Find.TickManager;
             return tm == null || (tm.TicksGame & 1) == 0;
         }
@@ -104,7 +107,8 @@ namespace RimThreadedTTR
             {
                 ok += Patch(harmony, "Mugirl.CorporateNetwork", "GameComponentTick", Type.EmptyTypes, "Every4");
             }
-            if (s.throttleWildAnimals)
+            ThrottlePatches.AllPawnAI = s.throttlePawnAI;
+            if (s.throttleWildAnimals || s.throttlePawnAI)
             {
                 // 只降"野生动物"（无派系动物）的**思考/寻路**，需求与健康仍每 tick 结算
                 MethodInfo mind = AccessTools.Method(typeof(Verse.AI.Pawn_MindState), "MindStateTickInterval", new[] { typeof(int) });
