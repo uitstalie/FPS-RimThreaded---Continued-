@@ -115,6 +115,17 @@ namespace RimThreadedTTR
                 Enabled = on;
             }
             if (!Enabled || DisabledByErrors || __instance == null) return true;
+            // 热点 #3：MapPawns 的派系列表是惰性构建的，且带 AssertMainThread 守卫。
+            // 在**主线程**上先预热好，worker 之后只做读 ⇒ 不再触发断言/并发构建。
+            try
+            {
+                var maps = Find.Maps;
+                for (int i = 0; i < maps.Count; i++)
+                {
+                    if (maps[i] != null && maps[i].mapPawns != null) EnsureFactions(maps[i].mapPawns);
+                }
+            }
+            catch { }
             if (DebugSettings.fastEcology) return true;          // 开发用分支：直接交回原版
             try
             {
@@ -220,6 +231,24 @@ namespace RimThreadedTTR
                     }
                 }
             }
+        }
+
+        // 反射缓存：MapPawns.EnsureFactionsListsInit 非 public
+        private static Action<MapPawns> ensureFactions;
+
+        private static void EnsureFactions(MapPawns mp)
+        {
+            try
+            {
+                if (ensureFactions == null)
+                {
+                    System.Reflection.MethodInfo mi = AccessTools.Method(typeof(MapPawns), "EnsureFactionsListsInit", Type.EmptyTypes);
+                    if (mi == null) return;
+                    ensureFactions = (Action<MapPawns>)Delegate.CreateDelegate(typeof(Action<MapPawns>), mi);
+                }
+                ensureFactions(mp);
+            }
+            catch { }
         }
 
         private static void FlushErrors()

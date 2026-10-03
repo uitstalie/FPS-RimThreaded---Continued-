@@ -111,6 +111,7 @@ namespace RimThreadedTTR
                 {
                     HediffLock.Apply(harmony);
                     if (regionFlag) RegionLock.Apply(harmony);   // 热点 #2：区域系统锁
+                    MainThreadGuardBypass.Apply(harmony);        // 热点 #3：单线程断言宽松化
                 }
                 FleckRegistry.RegisterAndPatchAll(harmony);
                 // Parallel combat targeting was prototyped and benchmarked here
