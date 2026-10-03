@@ -65,6 +65,12 @@ namespace RimThreadedTTR
                 if (TickListParallel.SkipPawnBuilding) Log.Warning("[RimThreadedTTR] ⚠ 天花板实验：跳过 Pawn/Building tick（仅测量，游戏状态会被破坏）");
             }
             catch { }
+            // S1a：主线程预加载所有 Def 的贴图（未命中缓存时 worker 会触发 Unity 跨线程加载）
+            try
+            {
+                if (System.IO.File.Exists("/tmp/ttr-no-preload") == false) AssetPreloader.Preload();
+            }
+            catch (Exception exPre) { Log.Warning("[RimThreadedTTR] S1 预加载失败: " + exPre); }
             TTRSettings settings = TTRMod.Instance.settings;
                 Harmony harmony = new Harmony("boksu.rimthreadedttr");
 
