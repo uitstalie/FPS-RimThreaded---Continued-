@@ -36,6 +36,30 @@ namespace RimThreadedTTR
             return tm == null || (tm.TicksGame & 3) == 0;
         }
 
+        /// <summary>Pawn_PathFollower.pawn 是 protected ⇒ 用 Harmony 的字段访问器。</summary>
+        private static readonly AccessTools.FieldRef<Verse.AI.Pawn_PathFollower, Pawn> PatherPawn =
+            AccessTools.FieldRefAccess<Verse.AI.Pawn_PathFollower, Pawn>("pawn");
+
+        /// <summary>野生动物判定：无派系的动物（圈养动物属于玩家派系）。</summary>
+        private static bool IsWildAnimal(Pawn pawn)
+        {
+            return pawn != null && pawn.RaceProps != null && pawn.RaceProps.Animal && pawn.Faction == null;
+        }
+
+        public static bool WildMind_Prefix(Verse.AI.Pawn_MindState __instance)
+        {
+            if (!IsWildAnimal(__instance.pawn)) return true;
+            TickManager tm = Find.TickManager;
+            return tm == null || (tm.TicksGame & 1) == 0;
+        }
+
+        public static bool WildPather_Prefix(Verse.AI.Pawn_PathFollower __instance)
+        {
+            if (!IsWildAnimal(PatherPawn(__instance))) return true;
+            TickManager tm = Find.TickManager;
+            return tm == null || (tm.TicksGame & 1) == 0;
+        }
+
         public static void Apply(Harmony harmony, TTRSettings s)
         {
             int ok = 0;
@@ -61,6 +85,18 @@ namespace RimThreadedTTR
             if (s.throttleStoryteller)
             {
                 ok += Patch(harmony, "RimWorld.Storyteller", "StorytellerTick", Type.EmptyTypes, "Every2");
+            }
+            if (s.throttleMugirl)
+            {
+                ok += Patch(harmony, "Mugirl.CorporateNetwork", "GameComponentTick", Type.EmptyTypes, "Every4");
+            }
+            if (s.throttleWildAnimals)
+            {
+                // 只降"野生动物"（无派系动物）的**思考/寻路**，需求与健康仍每 tick 结算
+                MethodInfo mind = AccessTools.Method(typeof(Verse.AI.Pawn_MindState), "MindStateTickInterval", new[] { typeof(int) });
+                MethodInfo path = AccessTools.Method(typeof(Verse.AI.Pawn_PathFollower), "PatherTick", Type.EmptyTypes);
+                if (mind != null) { harmony.Patch(mind, new HarmonyMethod(typeof(ThrottlePatches).GetMethod("WildMind_Prefix")), null, null, null); ok++; }
+                if (path != null) { harmony.Patch(path, new HarmonyMethod(typeof(ThrottlePatches).GetMethod("WildPather_Prefix")), null, null, null); ok++; }
             }
             if (s.throttleMood)
             {

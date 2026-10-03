@@ -426,10 +426,13 @@ namespace FPSPlus
 
             MethodInfo canReach = AccessTools.Method(typeof(Reachability), "CanReach",
                 new Type[] { typeof(IntVec3), typeof(LocalTargetInfo), typeof(Verse.AI.PathEndMode), typeof(TraverseParms) });
-            MethodInfo dirtyWalk = AccessTools.Method(typeof(RegionDirtyer), "Notify_WalkabilityChanged");
-            MethodInfo dirtySpawn = AccessTools.Method(typeof(RegionDirtyer), "Notify_ThingAffectingRegionsSpawned");
-            MethodInfo dirtyDespawn = AccessTools.Method(typeof(RegionDirtyer), "Notify_ThingAffectingRegionsDespawned");
-            MethodInfo dirtyAll = AccessTools.Method(typeof(RegionDirtyer), "SetAllDirty");
+            MethodInfo dirtyWalk = AccessTools.Method(typeof(RegionDirtyer), "Notify_WalkabilityChanged",
+                new Type[] { typeof(IntVec3), typeof(bool) });
+            MethodInfo dirtySpawn = AccessTools.Method(typeof(RegionDirtyer), "Notify_ThingAffectingRegionsSpawned",
+                new Type[] { typeof(Thing) });
+            MethodInfo dirtyDespawn = AccessTools.Method(typeof(RegionDirtyer), "Notify_ThingAffectingRegionsDespawned",
+                new Type[] { typeof(Thing) });
+            MethodInfo dirtyAll = AccessTools.Method(typeof(RegionDirtyer), "SetAllDirty", Type.EmptyTypes);
             if (canReach != null && dirtyWalk != null && dirtySpawn != null && dirtyDespawn != null && dirtyAll != null)
             {
                 harmony.Patch(canReach, new HarmonyMethod(typeof(ReachCachePatches), "CanReach_Prefix"),
@@ -483,7 +486,8 @@ namespace FPSPlus
                 Log.Error("[FPS+] JobGiver_Wander.TryGiveJob not found - animal wander throttling inactive.");
             }
 
-            MethodInfo workScan = AccessTools.Method(typeof(JobGiver_Work), "TryIssueJobPackage");
+            MethodInfo workScan = AccessTools.Method(typeof(JobGiver_Work), "TryIssueJobPackage",
+                new Type[] { typeof(Pawn), typeof(Verse.AI.JobIssueParams) });
             if (workScan != null)
             {
                 harmony.Patch(workScan,

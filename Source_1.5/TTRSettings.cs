@@ -50,13 +50,17 @@ namespace RimThreadedTTR
         /// <summary>纯视觉：Effecter 维护与小人特效每 2 tick。</summary>
         public bool throttleVisual = true;
         /// <summary>心情需求每 2 次结算（**改玩法节奏**，默认关）。</summary>
-        public bool throttleMood = false;
+        public bool throttleMood = true;   // 5) 实测 98 µs/tick（改心情节奏，可在设置里关）
         /// <summary>门每 2 tick（实测 46 µs/tick）。</summary>
         public bool throttleDoor = true;
         /// <summary>睡觉小人的 JobDriver 每 2 tick（实测 41 µs/tick）。</summary>
         public bool throttleLayDown = true;
         /// <summary>故事叙述者每 2 tick（实测 55 µs/tick）。</summary>
         public bool throttleStoryteller = true;
+        /// <summary>3) Mugirl.CorporateNetwork（GameComponent，单次 40 µs）每 4 tick。</summary>
+        public bool throttleMugirl = true;
+        /// <summary>6) 野生动物（无派系动物）的 AI/寻路每 2 tick（需求/健康仍每 tick）。</summary>
+        public bool throttleWildAnimals = true;
         /// <summary>探针：统计每 tick 的 Thing.DoTick 次数（P2 决策用，测量后应关闭）。</summary>
         public bool probeDoTick = false;
 
@@ -114,10 +118,12 @@ namespace RimThreadedTTR
             Scribe_Values.Look(ref parallelTargeting, "parallelTargeting", true);
             Scribe_Values.Look(ref throttleSimulation, "throttleSimulation", true);
             Scribe_Values.Look(ref throttleVisual, "throttleVisual", true);
-            Scribe_Values.Look(ref throttleMood, "throttleMood", false);
+            Scribe_Values.Look(ref throttleMood, "throttleMood", true);
             Scribe_Values.Look(ref throttleDoor, "throttleDoor", true);
             Scribe_Values.Look(ref throttleLayDown, "throttleLayDown", true);
             Scribe_Values.Look(ref throttleStoryteller, "throttleStoryteller", true);
+            Scribe_Values.Look(ref throttleMugirl, "throttleMugirl", true);
+            Scribe_Values.Look(ref throttleWildAnimals, "throttleWildAnimals", true);
             Scribe_Values.Look(ref parallelPawnTicks, "parallelPawnTicks", false);
             Scribe_Values.Look(ref parallelPawnHealth, "parallelPawnHealth", false);
             Scribe_Values.Look(ref targetingThreshold, "targetingThreshold", 8);
