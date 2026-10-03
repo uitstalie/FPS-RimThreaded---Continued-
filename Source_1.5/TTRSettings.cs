@@ -54,7 +54,7 @@ namespace RimThreadedTTR
         public bool probeDoTick = false;
 
         /// <summary>C：实验性 —— 在 Mono 上也给 Fleck 闭合泛型基类打补丁（风险：Mono 原生 abort）。</summary>
-        public bool experimentalFleckOnMono = false;
+        public bool experimentalFleckOnMono = true;   // C: 测试中
 
         // ── P2：TickList 主循环切片并行 ──
         /// <summary>TickList 主循环循环级并行（零逐调用拦截）。</summary>

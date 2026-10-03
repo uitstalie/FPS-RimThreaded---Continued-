@@ -60,7 +60,7 @@ namespace FPSPlus
         public bool quickSettingsButton = true;
         public bool welcomeShown = false;
         public Dictionary<string, bool> throttledComponents = new Dictionary<string, bool>();
-        public bool ignoreConflictGuard = false;
+        public bool ignoreConflictGuard = true;   // B: 覆盖 4 项让位（测试用）
 
         public float throttleStrength = 1f;
         public int maxIntervalFrames = 600;
@@ -112,7 +112,7 @@ namespace FPSPlus
             {
                 throttledComponents = new Dictionary<string, bool>();
             }
-            Scribe_Values.Look(ref ignoreConflictGuard, "ignoreConflictGuard", false);
+            Scribe_Values.Look(ref ignoreConflictGuard, "ignoreConflictGuard", true);
             Scribe_Values.Look(ref animalWanderThrottle, "animalWanderThrottle", false);
             Scribe_Values.Look(ref animalWanderMult, "animalWanderMult", 4);
             Scribe_Values.Look(ref junkCleanup, "junkCleanup", false);
