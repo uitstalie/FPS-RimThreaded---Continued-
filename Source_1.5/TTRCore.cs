@@ -50,9 +50,14 @@ namespace RimThreadedTTR
         {
             try
             {
-                string stamp;
-                try { stamp = System.IO.File.GetLastWriteTime(typeof(TTRCore).Assembly.Location).ToString("MM-dd HH:mm"); }
-                catch { stamp = "?"; }
+                string stamp = "?";
+                try
+                {
+                    // Assembly.Location 在 RimWorld/Mono 下常为空 ⇒ 退回 mod 目录里的实际 DLL 文件时间
+                    string dll = System.IO.Path.Combine(TTRMod.Instance.Content.RootDir, "1.6", "Assemblies", "RimThreadedTTR.dll");
+                    if (System.IO.File.Exists(dll)) stamp = System.IO.File.GetLastWriteTime(dll).ToString("MM-dd HH:mm");
+                }
+                catch { }
                 Log.Message("[RimThreadedTTR] TTR BUILD " + stamp + " (assembly mtime, auto)");
                 TTRSettings settings = TTRMod.Instance.settings;
                 Harmony harmony = new Harmony("boksu.rimthreadedttr");
