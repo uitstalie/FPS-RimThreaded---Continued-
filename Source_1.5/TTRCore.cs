@@ -50,7 +50,10 @@ namespace RimThreadedTTR
         {
             try
             {
-                Log.Message("[RimThreadedTTR] TTR BUILD 2026-10-03 10:31 (throttles=door/laydown/story/mugirl/wild, mood_default=true)");
+                string stamp;
+                try { stamp = System.IO.File.GetLastWriteTime(typeof(TTRCore).Assembly.Location).ToString("MM-dd HH:mm"); }
+                catch { stamp = "?"; }
+                Log.Message("[RimThreadedTTR] TTR BUILD " + stamp + " (assembly mtime, auto)");
                 TTRSettings settings = TTRMod.Instance.settings;
                 Harmony harmony = new Harmony("boksu.rimthreadedttr");
 
