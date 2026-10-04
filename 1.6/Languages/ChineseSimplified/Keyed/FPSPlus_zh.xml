@@ -1,0 +1,200 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <FPP_AdvancedHeader>高级</FPP_AdvancedHeader>
+  <FPP_AdvancedSub>冲突详情、原始计数器与逐项控制。</FPP_AdvancedSub>
+  <FPP_AfkSaver>挂机省电</FPP_AfkSaver>
+  <FPP_AfkSaverTip>游戏窗口失去焦点时（你切到别的窗口），渲染降到 15 fps——反正没人看那些帧。电脑更凉快、风扇更安静。殖民地照常运行；你切回来的瞬间即恢复满速。</FPP_AfkSaverTip>
+  <FPP_AlertCpuRow>上一秒警报 CPU：{0} 毫秒（原版速率约为 {1} 毫秒）</FPP_AlertCpuRow>
+  <FPP_AlertSkippedRow>已跳过的警报复查：{0}   文本缓存命中：{1}</FPP_AlertSkippedRow>
+  <FPP_AlertThrottle>警报自适应降频</FPP_AlertThrottle>
+  <FPP_AlertThrottleTip>降低高开销警报的复查频率。每个警报的开销都在实时测量；低开销警报保持原版频率，关键警报仍走快速通道。</FPP_AlertThrottleTip>
+  <FPP_AlertsByCost>警报按实测开销排序——取消勾选即可完全禁用某个警报：</FPP_AlertsByCost>
+  <FPP_AnimalWander>动物游荡降频</FPP_AnimalWander>
+  <FPP_AnimalWanderTip>闲逛的动物更少重新决定去哪游荡（减少 AI 重算与寻路）。行为不变，只是改变活动频率更低。</FPP_AnimalWanderTip>
+  <FPP_AutoTune>自动调节警报降频（当前倍率：{0}x）</FPP_AutoTune>
+  <FPP_AutoTuneNow>当前自动调节倍率：{0}x</FPP_AutoTuneNow>
+  <FPP_AutoTuneTip>当 FPS 下降时，警报复查频率会进一步降低（最多为你所设强度的 3 倍）。FPS 健康时，则按你的滑块设置执行。只改变警报刷新频率，不影响其他任何东西。</FPP_AutoTuneTip>
+  <FPP_BackupWarning>清理会在下次保存游戏时改动你的存档。请务必保留备份存档。</FPP_BackupWarning>
+  <FPP_CapRaids>限制袭击规模</FPP_CapRaids>
+  <FPP_CapRaidsTip>限制袭击强度（威胁点数）。让后期更轻松也更快——这会改变难度！</FPP_CapRaidsTip>
+  <FPP_CleanChunks>约 5 分钟后清理散落石块</FPP_CleanChunks>
+  <FPP_CleanChunksTip>不在任何堆放区/储存区且未被标记的石块会在约 5 分钟后消失。想留的石块请存放或标记！</FPP_CleanChunksTip>
+  <FPP_CleanCorpses>约 5 分钟后清理散落尸体</FPP_CleanCorpses>
+  <FPP_CleanCorpsesTip>不在任何储存区的非殖民者尸体会在约 5 分钟后消失。绝不会碰殖民者/殖民地动物的尸体、任务尸体、已储存的尸体或任何被标记的东西。想要袭击者的装备，就在时限内扒下来！</FPP_CleanCorpsesTip>
+  <FPP_CleanFilth>清理家园区域外的污秽</FPP_CleanFilth>
+  <FPP_CleanFilthEverywhere>约 5 分钟后清理各处的污秽</FPP_CleanFilthEverywhere>
+  <FPP_CleanFilthEverywhereTip>基地内的血迹和泥土放置约 5 分钟后也会消失。清洁工仍会优先打扫新鲜的污渍。</FPP_CleanFilthEverywhereTip>
+  <FPP_CleanFilthNow>立即清除所有污秽（一键打扫）</FPP_CleanFilthNow>
+  <FPP_CleanFilthTip>家园区域外的泥土、血迹、呕吐物等——本来也没人会去打扫。</FPP_CleanFilthTip>
+  <FPP_CleanLetters>清理陈旧的信件与消息</FPP_CleanLetters>
+  <FPP_CleanQuests>清理陈旧的已完成任务</FPP_CleanQuests>
+  <FPP_CleanStrangers>清理被遗忘的死亡陌生人</FPP_CleanStrangers>
+  <FPP_CleanTales>清理陈旧无用的故事</FPP_CleanTales>
+  <FPP_CleanWorldPawnsNow>立即清理世界人物</FPP_CleanWorldPawnsNow>
+  <FPP_CleanWorldPawnsTip>立即遗忘存档中拖着的死亡陌生人：你从未见过、与你的殖民者无关、无任务关联、也没有尸体。对旧存档效果极佳。</FPP_CleanWorldPawnsTip>
+  <FPP_CleanupHeader>清理</FPP_CleanupHeader>
+  <FPP_CleanupNeverTouches>清理绝不会碰任何与你的殖民地有关联的人物。</FPP_CleanupNeverTouches>
+  <FPP_CleanupSub>移除以游戏毫无理由仍在模拟的东西。东西越少，tick 越快。</FPP_CleanupSub>
+  <FPP_ColonistBarCache>殖民者栏缓存</FPP_ColonistBarCache>
+  <FPP_ColonistBarCacheTip>殖民者头像栏每帧都要为每个殖民者重建所有状态图标（睡眠、攻击、精神状态……）。此项改为记住图标 1/4 秒。外观完全一致。</FPP_ColonistBarCacheTip>
+  <FPP_ConflictNone>冲突检查：没有其他 mod 与任何 FPS+ 功能冲突——全部生效。</FPP_ConflictNone>
+  <FPP_ConflictSome>冲突检查：已自动停用 {0} 项功能（另一个 mod 修改了相同的代码）：</FPP_ConflictSome>
+  <FPP_ConflictWait>载入游戏后才会运行冲突检查。</FPP_ConflictWait>
+  <FPP_ConflictsFound>为避免 mod 冲突，已自动停用 {0} 项功能——详情见“高级”页。</FPP_ConflictsFound>
+  <FPP_Cooldown>冷却：{0} tick（{1} 秒）</FPP_Cooldown>
+  <FPP_CopyReport>复制性能报告</FPP_CopyReport>
+  <FPP_CopyReportTip>将完整的诊断摘要复制到剪贴板——非常适合用于反馈 bug 和创意工坊评论。</FPP_CopyReportTip>
+  <FPP_Corner>角落</FPP_Corner>
+  <FPP_CornerBL>左下角</FPP_CornerBL>
+  <FPP_CornerBR>右下角</FPP_CornerBR>
+  <FPP_CornerTL>左上角</FPP_CornerTL>
+  <FPP_CornerTR>右上角</FPP_CornerTR>
+  <FPP_CounterHeader>屏幕计数器</FPP_CounterHeader>
+  <FPP_CountersNote>计数器会在风暴、火灾和大规模战斗中增长——这说明 mod 正在工作。</FPP_CountersNote>
+  <FPP_DesignationBatch>标记绘制批处理</FPP_DesignationBatch>
+  <FPP_DesignationBatchTip>批量标记图标（搬运、砍伐、狩猎……）按图标类型合并为一次绘制，而不是每个都单独调用一次绘制，屏幕扫描也会被缓存。成百上千个标记不再拖累 FPS。外观完全一致。</FPP_DesignationBatchTip>
+  <FPP_DifficultyHeader>难度调整项</FPP_DifficultyHeader>
+  <FPP_DifficultySub>这些会让游戏变简单——特意单独列出。默认关闭才是诚实的选择。</FPP_DifficultySub>
+  <FPP_DoctorHeader>存档医生</FPP_DoctorHeader>
+  <FPP_DoctorSub>旧存档会悄悄积累成千上万的死数据。先扫描，再按需清理。这里不会自动执行任何操作。</FPP_DoctorSub>
+  <FPP_DragHint>提示：你也可以用鼠标把计数器拖到屏幕上的任意位置。</FPP_DragHint>
+  <FPP_DragToMove>用鼠标拖动可将它移到任意位置。</FPP_DragToMove>
+  <FPP_ExperimentalHeader>实验性</FPP_ExperimentalHeader>
+  <FPP_ExperimentalSub>新功能，仍在实战测试中。默认关闭——只有想帮忙测试时才开启。</FPP_ExperimentalSub>
+  <FPP_FactionThrottle>派系降频</FPP_FactionThrottle>
+  <FPP_FactionThrottleTip>派系系统（大型 mod 列表中有 45+ 个派系）每 tick 都被处理，尽管其内部计时器只在固定间隔触发。此项改为每 2 tick 运行一次——所有计时器仍按时触发，开销减半。</FPP_FactionThrottleTip>
+  <FPP_FilthRow>所有地图上的污秽：{0}</FPP_FilthRow>
+  <FPP_FineTuning>精细调节</FPP_FineTuning>
+  <FPP_FleckOffSafety>关闭（安全开关）</FPP_FleckOffSafety>
+  <FPP_FleckOk>正常</FPP_FleckOk>
+  <FPP_ForceOn>仍然强制开启这些功能（不推荐）</FPP_ForceOn>
+  <FPP_ForceOnTip>即使另一个 mod 修改了相同的方法，也照常运行 FPS+ 功能。两者会争抢同一段代码——只有在你清楚后果时才使用。</FPP_ForceOnTip>
+  <FPP_FpsGraphLabel>FPS — 最近 60 秒</FPP_FpsGraphLabel>
+  <FPP_GameplayHeader>玩法优化</FPP_GameplayHeader>
+  <FPP_GameplaySub>这些可能会轻微改变游戏行为——每个提示都会说明具体影响。</FPP_GameplaySub>
+  <FPP_HeightCache>警报高度缓存</FPP_HeightCache>
+  <FPP_HeightCacheTip>缓存警报标签的文本高度计算。</FPP_HeightCacheTip>
+  <FPP_IdeoThrottle>意识形态降频</FPP_IdeoThrottle>
+  <FPP_IdeoThrottleTip>信仰系统每 tick 都要处理所有仪式与信条——意识形态内容繁多的存档有 1000+ 个。此项改为每 2 tick 运行一次。仪式日期受到特别保护：所有预定仪式仍会举行，最多晚 1/60 秒。</FPP_IdeoThrottleTip>
+  <FPP_InspectCache>检视面板缓存</FPP_InspectCache>
+  <FPP_InspectCacheTip>短暂缓存检视面板文本，避免选中东西时每帧重复构建多次。</FPP_InspectCacheTip>
+  <FPP_InspectTtl>检视缓存有效期：{0} 毫秒</FPP_InspectTtl>
+  <FPP_InterfaceHeader>界面优化</FPP_InterfaceHeader>
+  <FPP_InterfaceSub>纯界面与渲染。绝不会改变游戏中发生的事情。</FPP_InterfaceSub>
+  <FPP_JunkCleanup>杂物清理</FPP_JunkCleanup>
+  <FPP_JunkCleanupTip>每游戏小时清理一次杂物。地图上东西越少，一切都越快。堆放区或架子上的东西绝不会被碰。</FPP_JunkCleanupTip>
+  <FPP_JunkSoFar>目前已清理杂物：{0}   已移除世界人物：{1}</FPP_JunkSoFar>
+  <FPP_JunkStatRow>已清理杂物：{0}   已移除世界人物：{1}</FPP_JunkStatRow>
+  <FPP_LettersRow>历史中的信件与消息：共 {0} 条，其中 {1} 条超过 1 年</FPP_LettersRow>
+  <FPP_LiveStatus>实时状态</FPP_LiveStatus>
+  <FPP_LoadForButton>载入游戏后才能使用立即清理世界人物按钮（主页面也有）。</FPP_LoadForButton>
+  <FPP_LoadForDoctor>载入游戏后才能使用存档医生。</FPP_LoadForDoctor>
+  <FPP_LoadForNumbers>载入游戏后才能在这里看到实时数据。</FPP_LoadForNumbers>
+  <FPP_LoadToUnlock>载入游戏后才能解锁世界人物清理按钮。</FPP_LoadToUnlock>
+  <FPP_MarshalSounds>将非主线程音效转发到主线程（需要重启）</FPP_MarshalSounds>
+  <FPP_MarshalSoundsTip>若有代码试图从后台线程播放音效，则将其排队到主线程安全播放，而不是让 Unity 音频崩溃。</FPP_MarshalSoundsTip>
+  <FPP_MasterSwitch>FPS+ 总开关</FPP_MasterSwitch>
+  <FPP_MasterSwitchTip>一键开启或关闭所有功能。测试时很有用：关掉它之后问题消失，说明问题来自 FPS+；问题依旧，则是别的 mod。</FPP_MasterSwitchTip>
+  <FPP_MaxDelay>单个警报两次检查之间的最大延迟：{0} 帧</FPP_MaxDelay>
+  <FPP_MaxThreat>最大威胁点数：{0}</FPP_MaxThreat>
+  <FPP_MinFleckCount>  进入并行所需的最小粒子数：{0}</FPP_MinFleckCount>
+  <FPP_ModdedSystemsHeader>来自其他 mod 的粒子系统（默认关闭——请逐个启用，风险自负）：</FPP_ModdedSystemsHeader>
+  <FPP_ModdedSystemsNone>  （你的 mod 列表中未检测到）</FPP_ModdedSystemsNone>
+  <FPP_ModdedSystemsTip>也并行运行此 mod 的粒子。它的代码并非为多线程编写——若出现问题，请关闭此项。立即生效，无需重启。</FPP_ModdedSystemsTip>
+  <FPP_NoConflicts>没有 mod 冲突——所有功能都能正常运行。</FPP_NoConflicts>
+  <FPP_NoMeasurements>尚无测量数据——载入游戏并运行几秒钟。</FPP_NoMeasurements>
+  <FPP_NoteRecommended>已应用 FPS+ 推荐配置。</FPP_NoteRecommended>
+  <FPP_NoteRemovedFilth>[FPS+] 已移除 {0} 处污秽。</FPP_NoteRemovedFilth>
+  <FPP_NoteRemovedLetters>[FPS+] 已移除 {0} 封陈旧的信件/消息。</FPP_NoteRemovedLetters>
+  <FPP_NoteRemovedPawns>[FPS+] 已移除 {0} 名被遗忘的世界人物。</FPP_NoteRemovedPawns>
+  <FPP_NoteRemovedQuests>[FPS+] 已移除 {0} 个陈旧的已完成任务。</FPP_NoteRemovedQuests>
+  <FPP_NoteRemovedTales>[FPS+] 已移除 {0} 条陈旧无用的故事。</FPP_NoteRemovedTales>
+  <FPP_NoteReportCopied>FPS+ 报告已复制——可粘贴到任何地方。</FPP_NoteReportCopied>
+  <FPP_NoteUiOnly>FPS+ 已设为仅界面——玩法完全是原版。</FPP_NoteUiOnly>
+  <FPP_OffMapSleep>地图外人物休眠</FPP_OffMapSleep>
+  <FPP_OffMapSleepTip>地图外人物（商队存货、雇佣兵池、派系 NPC）即使被 mod 添加的健康标记强制保持清醒，也允许完全休眠。一旦有事它们立刻醒来。休眠期间其伤势/疾病暂停。</FPP_OffMapSleepTip>
+  <FPP_OverlayCache>物品覆盖图标缓存</FPP_OverlayCache>
+  <FPP_OverlayCacheTip>缓存屏幕上的禁用/蓝图覆盖图标，避免每帧扫描地图上的每个物品。</FPP_OverlayCacheTip>
+  <FPP_ParallelFleckDraw>并行粒子绘制</FPP_ParallelFleckDraw>
+  <FPP_ParallelFleckDrawTip>用多线程绘制静态粒子（雨滴溅射、撞击效果……）。原版已对烟雾等投掷类粒子这样做；此项将其扩展到其余粒子。</FPP_ParallelFleckDrawTip>
+  <FPP_ParallelFleckSim>并行粒子模拟</FPP_ParallelFleckSim>
+  <FPP_ParallelFleckSimTip>当视觉粒子（fleck：雨滴溅射、烟雾、火花……）数量很多时，用多线程模拟。</FPP_ParallelFleckSimTip>
+  <FPP_ParticleCap>高负载场景的粒子上限</FPP_ParticleCap>
+  <FPP_ParticleCapMax>每帧最大新特效数：{0}</FPP_ParticleCapMax>
+  <FPP_ParticleCapTip>大规模战斗可能在单帧内请求数百个新特效（烟雾、火花）——而这正是 FPS 最关键的时候。此项限制每帧可以出现的新特效数量；平静时根本达不到上限。仅影响视觉。</FPP_ParticleCapTip>
+  <FPP_PresetNote>推荐 = 开启所有优化，但限制袭击规模、减少野生动物、清理石块/尸体除外。\n仅界面 = 只开界面优化——玩法 100% 原版。</FPP_PresetNote>
+  <FPP_PressScan>点击“扫描”查看你的存档里都背着什么。</FPP_PressScan>
+  <FPP_QuestsRow>任务：共 {0} 个，其中 {1} 个已于一年前完成</FPP_QuestsRow>
+  <FPP_QuickButton>快捷设置按钮</FPP_QuickButton>
+  <FPP_QuickButtonTip>右下角图标栏中的小仪表图标。在游戏内一键打开此设置。</FPP_QuickButtonTip>
+  <FPP_QuickSetup>快速设置</FPP_QuickSetup>
+  <FPP_RawAlerts>警报复查执行次数：{0}   已跳过：{1}   检视缓存命中：{2}</FPP_RawAlerts>
+  <FPP_RawCounters>原始计数</FPP_RawCounters>
+  <FPP_RawRoom>已跳过的房间重算：{0}   已跳过的派系 tick：{1}   强制休眠：{2}</FPP_RawRoom>
+  <FPP_RawStorage>已跳过的储存查找：{0}   已跳过的财富重算：{1}   美观度缓存命中：{2}</FPP_RawStorage>
+  <FPP_RawWork>已跳过的工作扫描：{0}   已清理杂物：{1}   文本缓存命中：{2}</FPP_RawWork>
+  <FPP_RawWorld>已移除的世界人物：{0}   批量标记绘制次数：{1}   自动调节倍率：{2}</FPP_RawWorld>
+  <FPP_ReachCache>可达性缓存（实验性）</FPP_ReachCache>
+  <FPP_ReachCacheTip>人物会不停问“我能走到 X 吗？”——对于被挡住的物品，答案每次都是否，而每次回答都要扫描地图。此项把“否”记住 1 秒。任何建筑变化时缓存立即清空，针对其他人物的检查永不缓存。最坏情况：人物会忽略一个刚变得可达的物品 1 秒。在有不可达物品的地图上能大幅提升 TPS。</FPP_ReachCacheTip>
+  <FPP_Recommended>推荐</FPP_Recommended>
+  <FPP_RecommendedTip>开启所有安全的优化项。难度调整项（限制袭击规模、减少野生动物）与物品清理项（石块、尸体）保持关闭。</FPP_RecommendedTip>
+  <FPP_ResetStats>重置统计</FPP_ResetStats>
+  <FPP_RestartNote>最后两项的改动会在重启游戏后生效。</FPP_RestartNote>
+  <FPP_RoomCache>房间与美观度缓存</FPP_RoomCache>
+  <FPP_RoomCacheTip>大型储存室不再是卡顿炸弹：房间属性最多每约 4 秒重算一次，而不是每搬一件物品都算；人物美观度采样也会短暂缓存。心情与房间显示会晚几秒更新。</FPP_RoomCacheTip>
+  <FPP_ScanNow>立即扫描我的存档</FPP_ScanNow>
+  <FPP_SessionFlecks>本会话：{0} 个并行模拟批次（{1}），{2} 个并行绘制批次（{3}）。</FPP_SessionFlecks>
+  <FPP_ShowFps>显示 FPS</FPP_ShowFps>
+  <FPP_ShowFpsGraph>显示 FPS 曲线</FPP_ShowFpsGraph>
+  <FPP_ShowFpsGraphTip>游戏时在屏幕上显示最近 60 秒 FPS 的小型实时曲线。</FPP_ShowFpsGraphTip>
+  <FPP_ShowFpsTip>游戏时在屏幕上显示小号实时 FPS 数字。</FPP_ShowFpsTip>
+  <FPP_ShowTps>显示 TPS</FPP_ShowTps>
+  <FPP_ShowTpsGraph>显示 TPS 曲线</FPP_ShowTpsGraph>
+  <FPP_ShowTpsGraphTip>游戏时在屏幕上显示最近 60 秒 TPS 的小型实时曲线。</FPP_ShowTpsGraphTip>
+  <FPP_ShowTpsTip>游戏时在屏幕上显示小号实时 TPS 数字（每秒游戏 tick 数）。正常速度下，健康的游戏应显示 60。</FPP_ShowTpsTip>
+  <FPP_SlowSpecialScans>特殊警报扫描降频</FPP_SlowSpecialScans>
+  <FPP_SlowSpecialScansTip>新任务/意识形态/剧本警报改为每秒检查一次，而不是每秒三次。新警报最多晚约 0.7 秒出现。</FPP_SlowSpecialScansTip>
+  <FPP_StandaloneActive>独立版 FPS+ mod 已启用——请在它自己的设置里配置 FPS+。此内置副本已禁用。</FPP_StandaloneActive>
+  <FPP_StatusActive>已启用——{1} 项优化中有 {0} 项开启。</FPP_StatusActive>
+  <FPP_StatusOff>全部关闭——游戏以纯原版方式运行。</FPP_StatusOff>
+  <FPP_StorageMemory>储存记忆</FPP_StorageMemory>
+  <FPP_StorageMemoryTip>当某物品无处可存时，记住这一点约 4 秒，而不是不停为它重新扫描所有储存区。你更改任何堆放区或储存设置时会立即重置。避免满仓的储存区吞噬 TPS。</FPP_StorageMemoryTip>
+  <FPP_TabAdvanced>高级</FPP_TabAdvanced>
+  <FPP_TabCleanup>清理</FPP_TabCleanup>
+  <FPP_TabDoctor>存档医生</FPP_TabDoctor>
+  <FPP_TabFpsPerf>FPS+（性能）</FPP_TabFpsPerf>
+  <FPP_TabGameplay>玩法</FPP_TabGameplay>
+  <FPP_TabInterface>界面</FPP_TabInterface>
+  <FPP_TabMain>主页面</FPP_TabMain>
+  <FPP_TabThreading>多线程</FPP_TabThreading>
+  <FPP_TalesRow>故事（tale）：共 {0} 条，其中 {1} 条陈旧且未使用</FPP_TalesRow>
+  <FPP_TextCache>文本尺寸缓存</FPP_TextCache>
+  <FPP_TextCacheTip>游戏每帧会在所有界面（包括其他 mod）中重复测量相同文本的尺寸数百次。改为记住结果。视觉上毫无变化。</FPP_TextCacheTip>
+  <FPP_ThreadSafeRand>线程安全随机数（需要重启）</FPP_ThreadSafeRand>
+  <FPP_ThreadSafeRandTip>为每个后台线程分配独立的随机数流，使并行代码无法破坏游戏的主随机状态。并行粒子功能需要它；也能保护其他使用后台线程的 mod。</FPP_ThreadSafeRandTip>
+  <FPP_ThrottleStrength>降频强度：{0}x（越高 = 警报复查越少）</FPP_ThrottleStrength>
+  <FPP_Tools>工具</FPP_Tools>
+  <FPP_TooltipNearMouse>鼠标附近提示框查找</FPP_TooltipNearMouse>
+  <FPP_TooltipNearMouseTip>只检查鼠标光标附近的物品来显示提示框，而不是每帧扫描地图上的所有物品。</FPP_TooltipNearMouseTip>
+  <FPP_TotalCleaned>存档医生累计清理：{0}</FPP_TotalCleaned>
+  <FPP_UiOnly>仅界面</FPP_UiOnly>
+  <FPP_UiOnlyTip>只开启界面与渲染优化。游戏里发生的事情完全不会改变。</FPP_UiOnlyTip>
+  <FPP_WanderStretch>游荡间隔倍率：{0}x</FPP_WanderStretch>
+  <FPP_WealthStretch>财富重算间隔延长</FPP_WealthStretch>
+  <FPP_WealthStretchTip>殖民地财富重算（大地图上的周期性小卡顿）改为每约 4 游戏小时一次，而不是约 1.4 小时。袭击规模对财富变化的反应会稍慢一些。</FPP_WealthStretchTip>
+  <FPP_WelcomeText>FPS+ | RimThreaded 已启用，正在为你的游戏提速。\n\n想一键完成最佳配置？打开 选项 &gt; Mod 设置 &gt; FPS+ | RimThreaded，点击“推荐”。\n\n随时可以用主页面上的总开关关闭所有功能。</FPP_WelcomeText>
+  <FPP_WelcomeTitle>FPS+ 正在运行</FPP_WelcomeTitle>
+  <FPP_Wildlife>减少野生动物</FPP_Wildlife>
+  <FPP_WildlifeAmount>野生动物数量：{0}%</FPP_WildlifeAmount>
+  <FPP_WildlifeTip>地图上生成的野生动物更少。可狩猎的猎物变少——这会改变玩法！</FPP_WildlifeTip>
+  <FPP_WorkScan>工作扫描冷却</FPP_WorkScan>
+  <FPP_WorkScanTip>没找到工作的殖民者会稍等片刻再重新扫描所有工作。紧急情况和你的直接命令绝不会被延迟。</FPP_WorkScanTip>
+  <FPP_WorkerThreads>工作线程数：{0}</FPP_WorkerThreads>
+  <FPP_WorkerThreadsAuto>自动（{0}）</FPP_WorkerThreadsAuto>
+  <FPP_WorkersByCost>后台工作系统按开销排序（看不见的 mod 系统）——勾选可将其中一个降为每 4 tick 运行一次：</FPP_WorkersByCost>
+  <FPP_WorldPawnCleanup>世界人物清理</FPP_WorldPawnCleanup>
+  <FPP_WorldPawnCleanupTip>每 4 天遗忘一次存档拖着的死亡陌生人：你从未见过、与你的殖民者无关、无任务关联、也没有尸体。旧存档会变得更快更小。</FPP_WorldPawnCleanupTip>
+  <FPP_WorldPawnsRow>存档中携带的世界人物：{0} 名存活，{1} 名死亡</FPP_WorldPawnsRow>
+  <FPP_ZoomDetail>拉远视角时降低细节</FPP_ZoomDetail>
+  <FPP_ZoomDetailTip>拉远视角时跳过动态阴影、天气粒子和植物摇摆。纯视觉——游戏中没有任何变化。</FPP_ZoomDetailTip>
+</LanguageData>
