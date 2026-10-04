@@ -55,7 +55,7 @@ namespace RimThreadedTTR
         /// <summary>门每 2 tick（实测 46 µs/tick）。</summary>
         public bool throttleDoor = true;
         /// <summary>睡觉小人的 JobDriver 每 2 tick（实测 41 µs/tick）。</summary>
-        public bool throttleLayDown = true;
+        public bool throttleLayDown = false; // 已撤：睡眠回休息是每 tick 累积，跳过=恢复速度砍半（用户实测 bug）
         /// <summary>故事叙述者每 2 tick（实测 55 µs/tick）。</summary>
         public bool throttleStoryteller = true;
         /// <summary>3) Mugirl.CorporateNetwork（GameComponent，单次 40 µs）每 4 tick。</summary>
@@ -127,8 +127,8 @@ namespace RimThreadedTTR
             Scribe_Values.Look(ref throttleSimulation, "throttleSimulation", true);
             Scribe_Values.Look(ref throttleVisual, "throttleVisual", true);
             Scribe_Values.Look(ref throttleMood, "throttleMood", true);
-            Scribe_Values.Look(ref throttleDoor, "throttleDoor", true);
-            Scribe_Values.Look(ref throttleLayDown, "throttleLayDown", true);
+            Scribe_Values.Look(ref throttleDoor, "throttleDoor", false);
+            Scribe_Values.Look(ref throttleLayDown, "throttleLayDown", false);
             Scribe_Values.Look(ref throttleStoryteller, "throttleStoryteller", true);
             Scribe_Values.Look(ref throttleMugirl, "throttleMugirl", true);
             Scribe_Values.Look(ref throttleWildAnimals, "throttleWildAnimals", true);
