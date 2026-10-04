@@ -339,7 +339,7 @@ namespace FPSPlus
                 }
                 catch (Exception ex)
                 {
-                    Log.Warning("[FPS+] junk cleanup could not destroy " + tmp[i] + ": " + ex.Message);
+                    Log.Warning("[RimThreadedTTR] FPS+ junk cleanup could not destroy " + tmp[i] + ": " + ex.Message);
                 }
             }
             int cleaned = tmp.Count;
@@ -453,7 +453,7 @@ namespace FPSPlus
                 }
                 catch (Exception ex)
                 {
-                    Log.Warning("[FPS+] world pawn cleanup skipped " + p + ": " + ex.Message);
+                    Log.Warning("[RimThreadedTTR] FPS+ world pawn cleanup skipped " + p + ": " + ex.Message);
                 }
                 if (removed >= max)
                 {

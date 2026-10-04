@@ -89,7 +89,7 @@ namespace FPSPlus
             }
             catch (Exception ex)
             {
-                Log.Warning("[FPS+] Save Doctor scan failed: " + ex);
+                Log.Warning("[RimThreadedTTR] FPS+ Save Doctor scan failed: " + ex);
             }
         }
 
@@ -157,7 +157,7 @@ namespace FPSPlus
             }
             catch (Exception ex)
             {
-                Log.Warning("[FPS+] Save Doctor quest cleanup failed: " + ex);
+                Log.Warning("[RimThreadedTTR] FPS+ Save Doctor quest cleanup failed: " + ex);
             }
             TotalCleaned += removed;
             return removed;
@@ -184,7 +184,7 @@ namespace FPSPlus
             }
             catch (Exception ex)
             {
-                Log.Warning("[FPS+] Save Doctor tale cleanup failed: " + ex);
+                Log.Warning("[RimThreadedTTR] FPS+ Save Doctor tale cleanup failed: " + ex);
             }
             TotalCleaned += removed;
             return removed;
@@ -206,7 +206,7 @@ namespace FPSPlus
             }
             catch (Exception ex)
             {
-                Log.Warning("[FPS+] Save Doctor archive cleanup failed: " + ex);
+                Log.Warning("[RimThreadedTTR] FPS+ Save Doctor archive cleanup failed: " + ex);
             }
             TotalCleaned += removed;
             return removed;
@@ -234,7 +234,7 @@ namespace FPSPlus
             }
             catch (Exception ex)
             {
-                Log.Warning("[FPS+] Save Doctor filth cleanup failed: " + ex);
+                Log.Warning("[RimThreadedTTR] FPS+ Save Doctor filth cleanup failed: " + ex);
             }
             TotalCleaned += removed;
             return removed;

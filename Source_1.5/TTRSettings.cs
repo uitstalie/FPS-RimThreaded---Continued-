@@ -90,6 +90,9 @@ namespace RimThreadedTTR
         // v1.2: the FPS+ module's settings live inside this mod's settings,
         // persisted in the same file. One mod, one settings entry.
         public FPSPlus.FPSPlusSettings fpsSettings = new FPSPlus.FPSPlusSettings();
+        // 2026-10: 合并 FastLoad —— 其设置同样挂在这里，共用同一个设置文件
+        // （Mod_RimThreadedTTR-Continued_TTRMod.xml）与同一个设置窗口。
+        public FastLoad.FastLoadSettings fastLoadSettings = new FastLoad.FastLoadSettings();
 #endif
 
         public int MaxThreadsClamped
@@ -140,6 +143,11 @@ namespace RimThreadedTTR
                 fpsSettings = new FPSPlus.FPSPlusSettings();
             }
             fpsSettings.ExposeData();
+            if (fastLoadSettings == null)
+            {
+                fastLoadSettings = new FastLoad.FastLoadSettings();
+            }
+            fastLoadSettings.ExposeData();
 #endif
         }
     }
@@ -157,6 +165,10 @@ namespace RimThreadedTTR
 #if TTR_MERGED
             // hand the embedded FPS+ module its settings object
             FPSPlus.FPSPlusMod.Raw = settings.fpsSettings;
+            // 合并 FastLoad：它的补丁必须在 **CreateModClasses 阶段**安装
+            // （与独立 mod 时 FastLoadMod 构造函数同一时机），否则
+            // LoadModXML / ApplyPatches / AllGraphicsLoaded 等启动阶段钩子全部失效。
+            FastLoad.FastLoadMod.Init(settings.fastLoadSettings);
 #endif
         }
 

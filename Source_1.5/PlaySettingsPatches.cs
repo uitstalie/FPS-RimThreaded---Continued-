@@ -47,7 +47,7 @@ namespace FPSPlus
                 }
                 catch (Exception ex)
                 {
-                    Log.Warning("[FPS+] could not open settings window: " + ex);
+                    Log.Warning("[RimThreadedTTR] FPS+ could not open settings window: " + ex);
                 }
             }
         }

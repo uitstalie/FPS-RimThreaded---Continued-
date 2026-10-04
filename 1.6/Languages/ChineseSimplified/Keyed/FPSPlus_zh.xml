@@ -197,4 +197,42 @@
   <FPP_WorldPawnsRow>存档中携带的世界人物：{0} 名存活，{1} 名死亡</FPP_WorldPawnsRow>
   <FPP_ZoomDetail>拉远视角时降低细节</FPP_ZoomDetail>
   <FPP_ZoomDetailTip>拉远视角时跳过动态阴影、天气粒子和植物摇摆。纯视觉——游戏中没有任何变化。</FPP_ZoomDetailTip>
+  <FPP_TabFastLoad>FastLoad</FPP_TabFastLoad>
+  <FPP_FastLoadHeader>FastLoad — 启动/加载加速与计时</FPP_FastLoadHeader>
+  <FPP_FastLoadSub>启动计时报告、XPath 快路径、静态构造计时与运行时归因。报告写到 &lt;配置目录&gt;/FastLoad-Startup.txt。</FPP_FastLoadSub>
+  <FPP_FastLoadRestartNote>计时/归因/降频开关在游戏启动时读取，改完需重启游戏生效；最后三项（强制速度、自动载入、补丁审计）立即生效。</FPP_FastLoadRestartNote>
+  <FPP_FastLoadNotReady>FastLoad 模块尚未初始化，请重启游戏。</FPP_FastLoadNotReady>
+  <FPP_FL_ProfileEnabled>启动计时报告</FPP_FL_ProfileEnabled>
+  <FPP_FL_ProfileEnabledTip>统计每个加载阶段与每个 mod 的耗时；报告写到配置目录的 FastLoad-Startup.txt（每次覆盖）。取消勾选会同时关掉所有启动期挂钩。</FPP_FL_ProfileEnabledTip>
+  <FPP_FL_XPathFastPath>XPath 快速路径（XML 补丁加速）</FPP_FL_XPathFastPath>
+  <FPP_FL_XPathFastPathTip>把 Defs/&lt;类型&gt;[defName="X"] 变成索引查找，并缓存已编译的 XPath 表达式。语义等价；若补丁行为异常可关掉。</FPP_FL_XPathFastPathTip>
+  <FPP_FL_StaticCtorTiming>静态构造计时（按 mod 归因）</FPP_FL_StaticCtorTiming>
+  <FPP_FL_StaticCtorTimingTip>挂钩 RuntimeHelpers.RunClassConstructor，统计各 mod 的 [StaticConstructorOnStartup] 耗时。</FPP_FL_StaticCtorTimingTip>
+  <FPP_FL_RuntimeHeader>运行时归因 —— 主线程 tick 链，按 mod/类型累加</FPP_FL_RuntimeHeader>
+  <FPP_FL_RuntimeProfiling>运行时归因（主开关）</FPP_FL_RuntimeProfiling>
+  <FPP_FL_RuntimeProfilingTip>挂钩 TickManager / Map / MapComponent / GameComponent / WorldComponent / JobDriver / JobTracker，把游戏内主线程时间按 mod 与类型累加进报告。有少量开销，只想跑满性能时可关掉。</FPP_FL_RuntimeProfilingTip>
+  <FPP_FL_RuntimeProfilingMinimal>极简 TPS 仪表（只测总量与 TPS）</FPP_FL_RuntimeProfilingMinimal>
+  <FPP_FL_RuntimeProfilingMinimalTip>只挂 2 个钩子（DoSingleTick / TickManagerUpdate）——想量 TPS 又不想被插桩拖慢时用这个，开销可忽略。</FPP_FL_RuntimeProfilingMinimalTip>
+  <FPP_FL_RuntimeProfilingMapPost>探针：MapPostTick 子系统</FPP_FL_RuntimeProfilingMapPost>
+  <FPP_FL_RuntimeProfilingMapPostTip>只挂 MapPostTick 的 4 个嫌疑（FireWatcher / MapComponentUtility / TileMutatorWorker / WaterBodyTracker），各 1 次/tick。</FPP_FL_RuntimeProfilingMapPostTip>
+  <FPP_FL_RuntimeProfilingFrames>探针：每帧入口</FPP_FL_RuntimeProfilingFrames>
+  <FPP_FL_RuntimeProfilingFramesTip>挂钩每帧只跑一次的入口（MapUpdate / UI 根 / 小人栏 / 警报 / 地图界面 / 选择器 / MapDrawer），用于定位帧时间归属。</FPP_FL_RuntimeProfilingFramesTip>
+  <FPP_FL_RuntimeProfilingHotThings>热路径：Thing/ThingComp 每 tick（采样）</FPP_FL_RuntimeProfilingHotThings>
+  <FPP_FL_RuntimeProfilingHotThingsTip>额外挂钩 ThingWithComps.Tick / Thing.Tick / ThingComp.CompTick*，按 1/100 采样。调用量极大，只在深挖时开。</FPP_FL_RuntimeProfilingHotThingsTip>
+  <FPP_FL_SampleRate>  热路径采样率（1 = 精确，100 = 每 100 次记 1 次）：{0}</FPP_FL_SampleRate>
+  <FPP_FL_TpsHeader>TPS 优化 —— 自动降频</FPP_FL_TpsHeader>
+  <FPP_FL_TpsOptimizeVisual>视觉降频（Effecter / 小人特效 → 每 2 tick）</FPP_FL_TpsOptimizeVisual>
+  <FPP_FL_TpsOptimizeVisualTip>纯视觉，不影响数值。预计省约 1.5% 每 tick 时间。</FPP_FL_TpsOptimizeVisualTip>
+  <FPP_FL_TpsOptimizeSimulation>模拟降频（风 → 每 4 tick；气体 / 搬运清单 → 每 2 tick）</FPP_FL_TpsOptimizeSimulation>
+  <FPP_FL_TpsOptimizeSimulationTip>风是纯风味（涡轮发电读数更新变慢）；气体扩散与搬运清单刷新减半 —— 有轻微玩法影响，可随时关。</FPP_FL_TpsOptimizeSimulationTip>
+  <FPP_FL_TpsParallelPawnTick>并行 tick 试点（装备 / 原生动词）</FPP_FL_TpsParallelPawnTick>
+  <FPP_FL_TpsParallelPawnTickTip>把 EquipmentTrackerTick / NativeVerbsTick 收集到 tick 末尾并行执行。实测小批次为负收益，除非压测否则保持关闭。</FPP_FL_TpsParallelPawnTickTip>
+  <FPP_FL_DebugHeader>测试 / 调试辅助 —— 立即生效</FPP_FL_DebugHeader>
+  <FPP_FL_ForceUltrafast>强制速度档（Superfast / Ultrafast）</FPP_FL_ForceUltrafast>
+  <FPP_FL_ForceUltrafastTip>压测辅助：每秒把时间档强制到最快档，保证每次 A/B 都在同一档位。也用于配合 Smart Speed 测试。</FPP_FL_ForceUltrafastTip>
+  <FPP_FL_AutoLoadSave>主菜单自动载入存档</FPP_FL_AutoLoadSave>
+  <FPP_FL_AutoLoadSaveTip>调试辅助：需要开关文件 /tmp/ttr-loadsave。自动载入最新存档（或该文件里写的存档名/绝对路径）。正常游玩请关掉。</FPP_FL_AutoLoadSaveTip>
+  <FPP_FL_AuditPatches>补丁审计（找出"睡着的优化"）</FPP_FL_AuditPatches>
+  <FPP_FL_AuditPatchesTip>每局只跑一次：列出有多少方法被补丁、owner 是谁，并逐项核对关键优化目标是否真的打上了补丁。</FPP_FL_AuditPatchesTip>
+  <FPP_FL_ReportPath>报告：&lt;配置目录&gt;/FastLoad-Startup.txt</FPP_FL_ReportPath>
 </LanguageData>

@@ -228,7 +228,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] AlertsReadout.CheckAddOrRemoveAlert not found - alert throttling inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ AlertsReadout.CheckAddOrRemoveAlert not found - alert throttling inactive.");
             }
 
             MethodInfo recalcMethod = AccessTools.Method(typeof(Alert), "Recalculate");
@@ -241,7 +241,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] Alert.Recalculate not found - alert cost measurement inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ Alert.Recalculate not found - alert cost measurement inactive.");
             }
 
             MethodInfo heightGetter = AccessTools.PropertyGetter(typeof(Alert), "Height");
@@ -252,7 +252,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] Alert.Height getter not found - height caching inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ Alert.Height getter not found - height caching inactive.");
             }
 
             MethodInfo drawInspect = AccessTools.Method(typeof(InspectPaneFiller), "DrawInspectStringFor");
@@ -263,7 +263,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] InspectPaneFiller.DrawInspectStringFor not found - inspect caching inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ InspectPaneFiller.DrawInspectStringFor not found - inspect caching inactive.");
             }
 
             MethodInfo overlays = AccessTools.Method(typeof(ThingOverlays), "ThingOverlaysOnGUI");
@@ -274,7 +274,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] ThingOverlays.ThingOverlaysOnGUI not found - overlay caching inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ ThingOverlays.ThingOverlaysOnGUI not found - overlay caching inactive.");
             }
 
             MethodInfo tooltips = AccessTools.Method(typeof(TooltipGiverList), "DispenseAllThingTooltips");
@@ -285,7 +285,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] TooltipGiverList.DispenseAllThingTooltips not found - tooltip lookup inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ TooltipGiverList.DispenseAllThingTooltips not found - tooltip lookup inactive.");
             }
 
             MethodInfo drawDes = AccessTools.Method(typeof(DesignationManager), "DrawDesignations");
@@ -296,7 +296,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] DesignationManager.DrawDesignations not found - designation batching inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ DesignationManager.DrawDesignations not found - designation batching inactive.");
             }
 
             MethodInfo storageFor = AccessTools.Method(typeof(StoreUtility), "TryFindBestBetterStorageFor");
@@ -309,7 +309,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] StoreUtility.TryFindBestBetterStorageFor not found - storage memory inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ StoreUtility.TryFindBestBetterStorageFor not found - storage memory inactive.");
             }
 
             // storage memory invalidation hooks (best effort - expiry covers gaps)
@@ -340,7 +340,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] WealthWatcher.RecountIfNeeded not found - wealth stretch inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ WealthWatcher.RecountIfNeeded not found - wealth stretch inactive.");
             }
 
             MethodInfo beauty = AccessTools.Method(typeof(BeautyUtility), "AverageBeautyPerceptible");
@@ -353,7 +353,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] BeautyUtility.AverageBeautyPerceptible not found - beauty caching inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ BeautyUtility.AverageBeautyPerceptible not found - beauty caching inactive.");
             }
 
             MethodInfo roomStats = AccessTools.Method(typeof(Room), "UpdateRoomStatsAndRole");
@@ -364,7 +364,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] Room.UpdateRoomStatsAndRole not found - room stat caching inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ Room.UpdateRoomStatsAndRole not found - room stat caching inactive.");
             }
 
             MethodInfo mothball = AccessTools.Method(typeof(RimWorld.Planet.WorldPawns), "ShouldMothball");
@@ -375,7 +375,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] WorldPawns.ShouldMothball not found - off-map sleep inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ WorldPawns.ShouldMothball not found - off-map sleep inactive.");
             }
 
             MethodInfo factionTick = AccessTools.Method(typeof(FactionManager), "FactionManagerTick");
@@ -386,7 +386,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] FactionManager.FactionManagerTick not found - faction throttle inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ FactionManager.FactionManagerTick not found - faction throttle inactive.");
             }
 
             MethodInfo ideoTick = AccessTools.Method(typeof(IdeoManager), "IdeoManagerTick");
@@ -399,7 +399,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] IdeoManagerTick/date trigger not found - ideology throttle inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ IdeoManagerTick/date trigger not found - ideology throttle inactive.");
             }
 
             MethodInfo createFleck = AccessTools.Method(typeof(FleckManager), "CreateFleck");
@@ -410,7 +410,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] FleckManager.CreateFleck not found - particle cap inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ FleckManager.CreateFleck not found - particle cap inactive.");
             }
 
             MethodInfo drawIcons = AccessTools.Method(typeof(ColonistBarColonistDrawer), "DrawIcons");
@@ -421,7 +421,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] ColonistBarColonistDrawer.DrawIcons not found - colonist bar cache inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ ColonistBarColonistDrawer.DrawIcons not found - colonist bar cache inactive.");
             }
 
             MethodInfo canReach = AccessTools.Method(typeof(Reachability), "CanReach",
@@ -445,7 +445,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] Reachability/RegionDirtyer methods not found - reach cache inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ Reachability/RegionDirtyer methods not found - reach cache inactive.");
             }
 
             MethodInfo playSettings = AccessTools.Method(typeof(PlaySettings), "DoPlaySettingsGlobalControls");
@@ -456,7 +456,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] PlaySettings.DoPlaySettingsGlobalControls not found - quick settings button inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ PlaySettings.DoPlaySettingsGlobalControls not found - quick settings button inactive.");
             }
 
             MethodInfo mapCompTick = AccessTools.Method(typeof(MapComponentUtility), "MapComponentTick");
@@ -471,7 +471,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] component tick utilities not found - background worker panel inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ component tick utilities not found - background worker panel inactive.");
             }
 
             // gameplay-affecting optimizations (each gated by its own setting)
@@ -483,7 +483,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] JobGiver_Wander.TryGiveJob not found - animal wander throttling inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ JobGiver_Wander.TryGiveJob not found - animal wander throttling inactive.");
             }
 
             MethodInfo workScan = AccessTools.Method(typeof(JobGiver_Work), "TryIssueJobPackage",
@@ -497,7 +497,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] JobGiver_Work.TryIssueJobPackage not found - work scan cooldown inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ JobGiver_Work.TryIssueJobPackage not found - work scan cooldown inactive.");
             }
 
             MethodInfo threat = AccessTools.Method(typeof(StorytellerUtility), "DefaultThreatPointsNow");
@@ -508,7 +508,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] StorytellerUtility.DefaultThreatPointsNow not found - raid cap inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ StorytellerUtility.DefaultThreatPointsNow not found - raid cap inactive.");
             }
 
             MethodInfo density = AccessTools.PropertyGetter(typeof(WildAnimalSpawner), "DesiredAnimalDensity");
@@ -519,7 +519,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] WildAnimalSpawner.DesiredAnimalDensity not found - wildlife reduction inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ WildAnimalSpawner.DesiredAnimalDensity not found - wildlife reduction inactive.");
             }
 
             MethodInfo shadow = AccessTools.Method(typeof(Graphic_Shadow), "DrawWorker");
@@ -530,7 +530,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] Graphic_Shadow.DrawWorker not found - zoom shadow skip inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ Graphic_Shadow.DrawWorker not found - zoom shadow skip inactive.");
             }
 
             MethodInfo weather = AccessTools.Method(typeof(WeatherManager), "DrawAllWeather");
@@ -541,7 +541,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] WeatherManager.DrawAllWeather not found - zoom weather skip inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ WeatherManager.DrawAllWeather not found - zoom weather skip inactive.");
             }
 
             MethodInfo sway = AccessTools.PropertyGetter(typeof(Prefs), "PlantWindSway");
@@ -552,7 +552,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] Prefs.PlantWindSway not found - zoom sway skip inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ Prefs.PlantWindSway not found - zoom sway skip inactive.");
             }
 
             MethodInfo calcHeight = AccessTools.Method(typeof(Text), "CalcHeight");
@@ -565,7 +565,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] Text.CalcHeight not found - text cache inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ Text.CalcHeight not found - text cache inactive.");
             }
 
             MethodInfo calcSize = AccessTools.Method(typeof(Text), "CalcSize");
@@ -578,7 +578,7 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] Text.CalcSize not found - text cache inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ Text.CalcSize not found - text cache inactive.");
             }
 
             MethodInfo alertsUpdate = AccessTools.Method(typeof(AlertsReadout), "AlertsReadoutUpdate");
@@ -589,10 +589,10 @@ namespace FPSPlus
             }
             else
             {
-                Log.Error("[FPS+] AlertsReadoutUpdate not found - slow special scans inactive.");
+                Log.Error("[RimThreadedTTR] FPS+ AlertsReadoutUpdate not found - slow special scans inactive.");
             }
 
-            Log.Message("[FPS+] initialized, " + count + "/39 methods patched (13 UI-side + 16 gameplay-optional + 7 cache-invalidation hooks + 3 background-worker hooks).");
+            Log.Message("[RimThreadedTTR] FPS+ module ready, " + count + "/39 methods patched (13 UI-side + 16 gameplay-optional + 7 cache-invalidation hooks + 3 background-worker hooks).");
         }
     }
 }

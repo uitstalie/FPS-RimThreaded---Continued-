@@ -38,13 +38,13 @@ namespace FPSPlus
                 if (uiPass >= 6)
                 {
                     uiDone = true;
-                    Log.Message("[FPS+] SELFTEST settings UI drew all 6 pages OK.");
+                    Log.Message("[RimThreadedTTR] FPS+ SELFTEST settings UI drew all settings pages (incl. FastLoad) OK.");
                 }
             }
             catch (Exception ex)
             {
                 uiDone = true;
-                Log.Error("[FPS+] SELFTEST settings UI draw FAILED: " + ex);
+                Log.Error("[RimThreadedTTR] FPS+ SELFTEST settings UI draw FAILED: " + ex);
             }
         }
 
@@ -57,7 +57,7 @@ namespace FPSPlus
             if (!announced)
             {
                 announced = true;
-                Log.Message("[FPS+] SELFTEST armed - waiting for tick 700.");
+                Log.Message("[RimThreadedTTR] FPS+ SELFTEST armed - waiting for tick 700.");
             }
             TickManager tm = Find.TickManager;
             if (tm == null)
@@ -72,7 +72,7 @@ namespace FPSPlus
                     if (!unpausedOnce)
                     {
                         unpausedOnce = true;
-                        Log.Message("[FPS+] SELFTEST unpaused the game (tick " + tm.TicksGame + ").");
+                        Log.Message("[RimThreadedTTR] FPS+ SELFTEST unpaused the game (tick " + tm.TicksGame + ").");
                     }
                 }
                 return;
@@ -87,7 +87,7 @@ namespace FPSPlus
                 VerifyHaulAndWealth();
                 VerifyReachCache();
                 SaveDoctor.Scan();
-                Log.Message("[FPS+] SELFTEST SaveDoctor scan: worldPawns=" + SaveDoctor.WorldPawnsAlive + "+" + SaveDoctor.WorldPawnsDead
+                Log.Message("[RimThreadedTTR] FPS+ SELFTEST SaveDoctor scan: worldPawns=" + SaveDoctor.WorldPawnsAlive + "+" + SaveDoctor.WorldPawnsDead
                     + " tales=" + SaveDoctor.TalesTotal + "/" + SaveDoctor.TalesRemovable
                     + " archive=" + SaveDoctor.ArchiveTotal + "/" + SaveDoctor.ArchiveRemovable
                     + " quests=" + SaveDoctor.QuestsTotal + "/" + SaveDoctor.QuestsRemovable
@@ -96,12 +96,12 @@ namespace FPSPlus
             }
             if (frames % 300 == 0 && frames < 1200)
             {
-                Log.Message("[FPS+] SELFTEST progress " + frames + "/1200 frames, tick " + tm.TicksGame + ".");
+                Log.Message("[RimThreadedTTR] FPS+ SELFTEST progress " + frames + "/1200 frames, tick " + tm.TicksGame + ".");
             }
             if (frames >= 1200)
             {
                 done = true;
-                Log.Message("[FPS+] SELFTEST " + AlertPatches.DebugSummary()
+                Log.Message("[RimThreadedTTR] FPS+ SELFTEST " + AlertPatches.DebugSummary()
                     + " inspectComputes=" + InspectPatches.Computes
                     + " inspectHits=" + InspectPatches.Hits
                     + " overlayRefreshes=" + UiScanPatches.OverlayRefreshes
@@ -123,8 +123,8 @@ namespace FPSPlus
                     + " barIconRebuildsSaved=" + ColonistBarPatches.IconRebuildsSaved
                     + " reachChecksSkipped=" + ReachCachePatches.ReachChecksSkipped
                     + " saveDoctorCleaned=" + SaveDoctor.TotalCleaned);
-                Log.Message("[FPS+] SELFTEST workers: " + ComponentPatches.DebugSummary());
-                Log.Message("[FPS+] SELFTEST COMPLETE - shutting down.");
+                Log.Message("[RimThreadedTTR] FPS+ SELFTEST workers: " + ComponentPatches.DebugSummary());
+                Log.Message("[RimThreadedTTR] FPS+ SELFTEST COMPLETE - shutting down.");
                 Root.Shutdown();
             }
         }
@@ -166,7 +166,7 @@ namespace FPSPlus
                     bool first = StoreUtility.TryFindBestBetterStorageFor(t, colonist, map, StoreUtility.CurrentStoragePriorityOf(t), colonist.Faction, out cell, out dest, true);
                     StoreUtility.TryFindBestBetterStorageFor(t, colonist, map, StoreUtility.CurrentStoragePriorityOf(t), colonist.Faction, out cell, out dest, true);
                     long delta = HaulWealthPatches.HaulLookupsSkipped - before;
-                    Log.Message("[FPS+] SELFTEST storage-memory check: firstLookupFound=" + first + " secondLookupSkipped=" + (delta > 0 ? "YES" : "no"));
+                    Log.Message("[RimThreadedTTR] FPS+ SELFTEST storage-memory check: firstLookupFound=" + first + " secondLookupSkipped=" + (delta > 0 ? "YES" : "no"));
                 }
                 // wealth stretch: pretend the last recount was 6000 ticks ago
                 // (vanilla would recount; our stretch must skip it)
@@ -180,12 +180,12 @@ namespace FPSPlus
                     recount.Invoke(ww, null);
                     long wDelta = HaulWealthPatches.WealthRecountsSkipped - wBefore;
                     lastTick.SetValue(ww, (float)Find.TickManager.TicksGame);
-                    Log.Message("[FPS+] SELFTEST wealth-stretch check: recountSkipped=" + (wDelta > 0 ? "YES" : "no"));
+                    Log.Message("[RimThreadedTTR] FPS+ SELFTEST wealth-stretch check: recountSkipped=" + (wDelta > 0 ? "YES" : "no"));
                 }
             }
             catch (Exception ex)
             {
-                Log.Warning("[FPS+] SELFTEST haul/wealth verification failed: " + ex);
+                Log.Warning("[RimThreadedTTR] FPS+ SELFTEST haul/wealth verification failed: " + ex);
             }
         }
 
@@ -217,7 +217,7 @@ namespace FPSPlus
                 }
                 if (!target.IsValid)
                 {
-                    Log.Message("[FPS+] SELFTEST reach-cache check skipped: no impassable cell on this map.");
+                    Log.Message("[RimThreadedTTR] FPS+ SELFTEST reach-cache check skipped: no impassable cell on this map.");
                     return;
                 }
                 FPSPlusSettings s = FPSPlusMod.Raw;
@@ -230,11 +230,11 @@ namespace FPSPlus
                 long delta = ReachCachePatches.ReachChecksSkipped - before;
                 s.reachCache = old;
                 ReachCachePatches.ClearAll();
-                Log.Message("[FPS+] SELFTEST reach-cache check: firstAnswerNo=" + (!first) + " secondFromCache=" + (delta > 0 ? "YES" : "no"));
+                Log.Message("[RimThreadedTTR] FPS+ SELFTEST reach-cache check: firstAnswerNo=" + (!first) + " secondFromCache=" + (delta > 0 ? "YES" : "no"));
             }
             catch (Exception ex)
             {
-                Log.Warning("[FPS+] SELFTEST reach-cache verification failed: " + ex);
+                Log.Warning("[RimThreadedTTR] FPS+ SELFTEST reach-cache verification failed: " + ex);
             }
         }
 
@@ -273,11 +273,11 @@ namespace FPSPlus
                         cuts++;
                     }
                 }
-                Log.Message("[FPS+] SELFTEST designated " + mines + " mine cells + " + cuts + " plants for draw batching test.");
+                Log.Message("[RimThreadedTTR] FPS+ SELFTEST designated " + mines + " mine cells + " + cuts + " plants for draw batching test.");
             }
             catch (Exception ex)
             {
-                Log.Warning("[FPS+] SELFTEST could not create test designations: " + ex);
+                Log.Warning("[RimThreadedTTR] FPS+ SELFTEST could not create test designations: " + ex);
             }
         }
     }

@@ -20,6 +20,7 @@ namespace FPSPlus
         private static Vector2 scrollClean;
         private static Vector2 scrollAdv;
         private static Vector2 scrollDoctor;
+        private static Vector2 scrollFast;
 
         private static string[] TabNames
         {
@@ -28,7 +29,8 @@ namespace FPSPlus
                 return new string[]
                 {
                     T("FPP_TabMain", "Main"), T("FPP_TabInterface", "Interface"), T("FPP_TabGameplay", "Gameplay"),
-                    T("FPP_TabCleanup", "Cleanup"), T("FPP_TabDoctor", "Doctor"), T("FPP_TabAdvanced", "Advanced")
+                    T("FPP_TabCleanup", "Cleanup"), T("FPP_TabDoctor", "Doctor"), T("FPP_TabAdvanced", "Advanced"),
+                    T("FPP_TabFastLoad", "FastLoad")
                 };
             }
         }
@@ -75,7 +77,7 @@ namespace FPSPlus
             {
                 bgTried = true;
                 bgTex = ContentFinder<Texture2D>.Get("FPSPlus/SettingsBg", false);
-                Log.Message("[FPS+] settings background " + (bgTex != null ? "loaded." : "not found - using plain background."));
+                Log.Message("[RimThreadedTTR] FPS+ settings background " + (bgTex != null ? "loaded." : "not found - using plain background."));
             }
             if (bgTex == null)
             {
@@ -103,7 +105,9 @@ namespace FPSPlus
 
         public static void Draw(Rect inRect)
         {
-            if (FPSPlusInit.StandaloneActive)
+            // 合并后 FastLoad 页也必须能打开（即使独立 FPS+ 在跑、FPS+ 设置被让位）
+            bool fastLoadTab = tab == TabNames.Length - 1;
+            if (FPSPlusInit.StandaloneActive && !fastLoadTab)
             {
                 Widgets.Label(inRect, T("FPP_StandaloneActive", "The standalone FPS+ mod is active - configure FPS+ in its own settings. This built-in copy is disabled."));
                 return;
@@ -111,7 +115,7 @@ namespace FPSPlus
             // Raw, not Settings: the page must keep drawing while the master
             // switch is off, or the user could never turn it back on.
             FPSPlusSettings s = FPSPlusMod.Raw;
-            if (s == null)
+            if (s == null && !fastLoadTab)
             {
                 return;
             }
@@ -152,9 +156,13 @@ namespace FPSPlus
             {
                 DrawDoctor(body, s);
             }
-            else
+            else if (tab == 5)
             {
                 DrawAdvanced(body, s);
+            }
+            else
+            {
+                DrawFastLoad(body);
             }
         }
 
@@ -780,6 +788,89 @@ namespace FPSPlus
                 }
                 y += 26f;
             }
+            Widgets.EndScrollView();
+        }
+
+        // ------------------------------------------------------------------
+        // FASTLOAD - 原 FastLoad mod 的全部开关（合并进本 mod 后仍可在此控制）
+        // ------------------------------------------------------------------
+        private static void DrawFastLoad(Rect body)
+        {
+            FastLoad.FastLoadSettings fl = FastLoad.FastLoadMod.Settings;
+            GlassPanel(body);
+            Rect inner = body.ContractedBy(10f);
+            if (fl == null)
+            {
+                Widgets.Label(inner, T("FPP_FastLoadNotReady", "FastLoad module is not initialized yet. Restart the game."));
+                return;
+            }
+            float contentH = 560f;
+            Rect view = new Rect(0f, 0f, inner.width - 20f, contentH);
+            Widgets.BeginScrollView(inner, ref scrollFast, view);
+
+            Listing_Standard l = new Listing_Standard();
+            l.Begin(new Rect(0f, 0f, view.width, contentH));
+
+            SectionHeader(l, T("FPP_FastLoadHeader", "FastLoad - startup / loading speed and timing"),
+                T("FPP_FastLoadSub", "Startup timing report, XPath fast path, static-constructor timing and runtime attribution. The report is written to <config folder>/FastLoad-Startup.txt."));
+
+            GUI.color = Warn;
+            l.Label(T("FPP_FastLoadRestartNote", "Timing / attribution / throttle switches are read while the game starts, so they apply after a restart. The last three (forced speed, auto-load, patch audit) apply immediately."));
+            GUI.color = Color.white;
+            l.Gap(6f);
+
+            l.CheckboxLabeled(T("FPP_FL_ProfileEnabled", "Startup timing report"), ref fl.profileEnabled,
+                T("FPP_FL_ProfileEnabledTip", "Time every loading phase and every mod; the report is written to FastLoad-Startup.txt in the config folder (overwritten each run). Turns all startup hooks off when unchecked."));
+            l.CheckboxLabeled(T("FPP_FL_XPathFastPath", "XPath fast path (faster XML patching)"), ref fl.xpathFastPath,
+                T("FPP_FL_XPathFastPathTip", "Turns Defs/<type>[defName=\"X\"] into an index lookup and caches compiled XPath expressions. Semantically equivalent; turn it off if patching behaves strangely."));
+            l.CheckboxLabeled(T("FPP_FL_StaticCtorTiming", "Static-constructor timing (per mod)"), ref fl.staticCtorTiming,
+                T("FPP_FL_StaticCtorTimingTip", "Hooks RuntimeHelpers.RunClassConstructor to measure each mod's [StaticConstructorOnStartup] time."));
+
+            l.Gap(8f);
+            GUI.color = Dim;
+            l.Label(T("FPP_FL_RuntimeHeader", "RUNTIME ATTRIBUTION - main-thread tick chain, accumulated per mod/type"));
+            GUI.color = Color.white;
+            l.CheckboxLabeled(T("FPP_FL_RuntimeProfiling", "Runtime attribution (enabled)"), ref fl.runtimeProfiling,
+                T("FPP_FL_RuntimeProfilingTip", "Hooks TickManager / Map / MapComponent / GameComponent / WorldComponent / JobDriver / JobTracker and accumulates main-thread time per mod and type into the report. Small overhead; turn it off to run at full speed."));
+            l.CheckboxLabeled(T("FPP_FL_RuntimeProfilingMinimal", "Minimal TPS meter (only totals + TPS)"), ref fl.runtimeProfilingMinimal,
+                T("FPP_FL_RuntimeProfilingMinimalTip", "Only two hooks (DoSingleTick / TickManagerUpdate) - near-zero overhead way to get a measured TPS number for A/B tests."));
+            l.CheckboxLabeled(T("FPP_FL_RuntimeProfilingMapPost", "Probe: MapPostTick subsystems"), ref fl.runtimeProfilingMapPost,
+                T("FPP_FL_RuntimeProfilingMapPostTip", "Only hooks the four MapPostTick suspects (FireWatcher / MapComponentUtility / TileMutatorWorker / WaterBodyTracker), once per tick."));
+            l.CheckboxLabeled(T("FPP_FL_RuntimeProfilingFrames", "Probe: per-frame entries"), ref fl.runtimeProfilingFrames,
+                T("FPP_FL_RuntimeProfilingFramesTip", "Hooks the once-per-frame entries (MapUpdate / UI root / colonist bar / alerts / map interface / selector / map drawer) to locate frame time."));
+            l.CheckboxLabeled(T("FPP_FL_RuntimeProfilingHotThings", "Hot path: Thing/ThingComp per tick (sampled)"), ref fl.runtimeProfilingHotThings,
+                T("FPP_FL_RuntimeProfilingHotThingsTip", "Also hooks ThingWithComps.Tick / Thing.Tick / ThingComp.CompTick*, sampled 1 in 100. Huge call volume - only enable when digging deep."));
+            l.Label(TF("FPP_FL_SampleRate", "  Hot-path sample rate (1 = exact, 100 = 1 in 100): {0}", fl.runtimeProfilingSampleRate));
+            fl.runtimeProfilingSampleRate = (int)l.Slider((float)fl.runtimeProfilingSampleRate, 1f, 200f);
+
+            l.Gap(8f);
+            GUI.color = Dim;
+            l.Label(T("FPP_FL_TpsHeader", "TPS OPTIMISATION - automatic throttling"));
+            GUI.color = Color.white;
+            l.CheckboxLabeled(T("FPP_FL_TpsOptimizeVisual", "Visual throttling (Effecter / pawn effects -> every 2 ticks)"), ref fl.tpsOptimizeVisual,
+                T("FPP_FL_TpsOptimizeVisualTip", "Purely visual, no gameplay change. Saves roughly 1.5% of tick time."));
+            l.CheckboxLabeled(T("FPP_FL_TpsOptimizeSimulation", "Simulation throttling (wind -> 4 ticks; gas / haulables -> 2 ticks)"), ref fl.tpsOptimizeSimulation,
+                T("FPP_FL_TpsOptimizeSimulationTip", "Wind is pure flavour (turbine readouts update slower); gas diffusion and haulable list refresh at half rate - a slight gameplay effect, can be turned off anytime."));
+            l.CheckboxLabeled(T("FPP_FL_TpsParallelPawnTick", "Parallel tick pilot (equipment / native verbs)"), ref fl.tpsParallelPawnTick,
+                T("FPP_FL_TpsParallelPawnTickTip", "Collects EquipmentTrackerTick / NativeVerbsTick and runs them in parallel at the end of the tick. Measured as a net loss on small batches - keep it off unless benchmarking."));
+
+            l.Gap(8f);
+            GUI.color = Dim;
+            l.Label(T("FPP_FL_DebugHeader", "TEST / DEBUG HELPERS - applied immediately"));
+            GUI.color = Color.white;
+            l.CheckboxLabeled(T("FPP_FL_ForceUltrafast", "Force speed level (Superfast / Ultrafast)"), ref fl.forceUltrafast,
+                T("FPP_FL_ForceUltrafastTip", "Benchmark helper: forces the time speed to the fastest level once per second so every A/B run uses the same speed. Also lets you test with Smart Speed."));
+            l.CheckboxLabeled(T("FPP_FL_AutoLoadSave", "Auto-load a save from the main menu"), ref fl.autoLoadSave,
+                T("FPP_FL_AutoLoadSaveTip", "Debug helper: requires the flag file /tmp/ttr-loadsave. Loads the newest save (or the name/path written in that file) automatically. Leave off for normal play."));
+            l.CheckboxLabeled(T("FPP_FL_AuditPatches", "Patch audit (find 'sleeping' optimisations)"), ref fl.auditPatches,
+                T("FPP_FL_AuditPatchesTip", "Once per session, lists how many methods are patched, by which Harmony owner, and whether each key optimisation target really got patched."));
+
+            l.Gap(10f);
+            GUI.color = Dim;
+            l.Label(T("FPP_FL_ReportPath", "Report: <config folder>/FastLoad-Startup.txt"));
+            GUI.color = Color.white;
+
+            l.End();
             Widgets.EndScrollView();
         }
 

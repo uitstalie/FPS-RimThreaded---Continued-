@@ -13,7 +13,11 @@
   -->
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
-    <LangVersion>5</LangVersion>
+    <!-- FastLoad 的源码用到 C# 7.x 语法（原来的 TTR 源码是 C# 5） -->
+    <LangVersion>7.3</LangVersion>
+    <!-- 合并版：FPS+ 的设置界面 + 单一 Mod 类 / 单一设置文件。
+         不定义它就会退回「FPSPlusMod 作为独立 Mod 类」的旧结构。 -->
+    <DefineConstants>$(DefineConstants);TTR_MERGED</DefineConstants>
     <OutputPath>..\1.6\Assemblies</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>

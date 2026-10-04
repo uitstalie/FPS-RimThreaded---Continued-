@@ -121,11 +121,11 @@ namespace FPSPlus
 
             if (Report.Count == 0)
             {
-                Log.Message("[FPS+] conflict check: no other mod touches our patch targets - all features active.");
+                Log.Message("[RimThreadedTTR] FPS+ conflict check: no other mod touches our patch targets - all features active.");
             }
             else
             {
-                Log.Message("[FPS+] conflict check: " + Report.Count
+                Log.Message("[RimThreadedTTR] FPS+ conflict check: " + Report.Count
                     + " feature(s) auto-disabled to avoid fighting another mod:\n  - "
                     + string.Join("\n  - ", Report.ToArray())
                     + "\n  (override available in FPS+ settings)");
@@ -199,7 +199,7 @@ namespace FPSPlus
             }
             catch (Exception ex)
             {
-                Log.Warning("[FPS+] conflict check failed (features stay on): " + ex);
+                Log.Warning("[RimThreadedTTR] FPS+ conflict check failed (features stay on): " + ex);
             }
         }
     }
