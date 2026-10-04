@@ -28,6 +28,15 @@ namespace RimThreadedTTR
         public static int Workers = 4;
         public static int MinItems = 32;
         public static bool KeepPawnBuildingSerial = true;
+        /// <summary>选项 A：只让**野生动物**（无派系动物）走并行；殖民者/机械/建筑仍串行。
+        /// 依据：mod 极少触碰野生动物的 hediff/job 链，能把"mod 直改内部状态"的风险压到最低。</summary>
+        public static bool ParallelWildAnimals;
+        public static long WildTicksParallel;
+
+        private static bool IsWildAnimal(Pawn p)
+        {
+            return p != null && p.RaceProps != null && p.RaceProps.Animal && p.Faction == null && !p.Dead;
+        }
 
         /// <summary>运行时开关文件：存在 ⇒ 停用并行（回到原版），便于**同一次会话内**做 A/B。</summary>
         public const string DisableFlagPath = "/tmp/ttr-p2-off";
@@ -97,6 +106,7 @@ namespace RimThreadedTTR
                 try
                 {
                     if (System.IO.File.Exists(DisableFlagPath)) on = false;
+                    try { ParallelWildAnimals = System.IO.File.Exists("/tmp/ttr-p2-wild"); } catch { }
                     if (System.IO.File.Exists(IncludeAllFlagPath)) KeepPawnBuildingSerial = false;
                     else KeepPawnBuildingSerial = DefaultKeepPawnBuildingSerial;
                     int w;
@@ -184,7 +194,10 @@ namespace RimThreadedTTR
             {
                 Thing t = bucket[i];
                 if (t.Destroyed) continue;
-                if (KeepPawnBuildingSerial && (t is Pawn || t is Building)) serialPart.Add(t);
+                if (KeepPawnBuildingSerial && (t is Building || (t is Pawn && !(ParallelWildAnimals && IsWildAnimal((Pawn)t)))))
+                {
+                    serialPart.Add(t);
+                }
                 else parallelPart.Add(t);
             }
 
