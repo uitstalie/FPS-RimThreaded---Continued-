@@ -194,7 +194,11 @@ namespace RimThreadedTTR
             {
                 Thing t = bucket[i];
                 if (t.Destroyed) continue;
-                if (KeepPawnBuildingSerial && (t is Building || (t is Pawn && !(ParallelWildAnimals && IsWildAnimal((Pawn)t)))))
+                // Plant 的 TickLong 会（经 mod 的 TakeDamage/Destroy 钩子）读 MapPawns，
+                // 而 MapPawns 用**池化列表**、官方明确禁止跨线程访问（实测红字：
+                // "Accessing map pawns off main thread ... due to list pooling"）
+                // ⇒ 植物不进并行集（代价小：植物 tick 很轻）。
+                if (KeepPawnBuildingSerial && (t is Building || t is Plant || (t is Pawn && !(ParallelWildAnimals && IsWildAnimal((Pawn)t)))))
                 {
                     serialPart.Add(t);
                 }
