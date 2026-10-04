@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Verse;
+using FPSPlus;
 
 namespace RimThreadedTTR
 {
@@ -172,7 +173,7 @@ namespace RimThreadedTTR
         {
 #if TTR_MERGED
             FPSPlus.SettingsUI.DrawBackground(inRect);
-            string[] topTabs = { "Threading", "FPS+ (performance)" };
+            string[] topTabs = { SettingsUI.T("FPP_TabThreading", "Threading"), SettingsUI.T("FPP_TabFpsPerf", "FPS+ (performance)") };
             for (int i = 0; i < topTabs.Length; i++)
             {
                 Rect tr = new Rect(inRect.x + i * 230f, inRect.y, 224f, 30f);
@@ -198,7 +199,7 @@ namespace RimThreadedTTR
             Listing_Standard listing = new Listing_Standard();
             listing.Begin(inRect);
 
-            listing.Label("Worker threads: " + (settings.maxThreads <= 0 ? ("Auto (" + settings.MaxThreadsClamped + ")") : settings.maxThreads.ToString()));
+            listing.Label(SettingsUI.TF("FPP_WorkerThreads", "Worker threads: {0}", settings.maxThreads <= 0 ? SettingsUI.TF("FPP_WorkerThreadsAuto", "Auto ({0})", settings.MaxThreadsClamped) : settings.maxThreads.ToString()));
             settings.maxThreads = (int)listing.Slider(settings.maxThreads <= 0 ? 0f : (float)settings.maxThreads, 0f, 16f);
             if (settings.maxThreads == 0)
             {
@@ -206,20 +207,20 @@ namespace RimThreadedTTR
             }
             listing.GapLine();
 
-            listing.CheckboxLabeled("Parallel fleck simulation", ref settings.parallelFlecks,
-                "Simulate visual particles (flecks: rain splashes, smoke, sparks...) on multiple threads when there are many of them.");
-            listing.CheckboxLabeled("Parallel fleck drawing", ref settings.parallelFleckDraw,
-                "Draw static particles (rain splashes, impacts...) on multiple threads. Vanilla already does this for thrown particles like smoke; this extends it to the rest.");
+            listing.CheckboxLabeled(SettingsUI.T("FPP_ParallelFleckSim", "Parallel fleck simulation"), ref settings.parallelFlecks,
+                SettingsUI.T("FPP_ParallelFleckSimTip", "Simulate visual particles (flecks: rain splashes, smoke, sparks...) on multiple threads when there are many of them."));
+            listing.CheckboxLabeled(SettingsUI.T("FPP_ParallelFleckDraw", "Parallel fleck drawing"), ref settings.parallelFleckDraw,
+                SettingsUI.T("FPP_ParallelFleckDrawTip", "Draw static particles (rain splashes, impacts...) on multiple threads. Vanilla already does this for thrown particles like smoke; this extends it to the rest."));
             if (settings.parallelFlecks || settings.parallelFleckDraw)
             {
-                listing.Label("  Minimum fleck count before going parallel: " + settings.fleckThreshold);
+                listing.Label(SettingsUI.TF("FPP_MinFleckCount", "  Minimum fleck count before going parallel: {0}", settings.fleckThreshold));
                 settings.fleckThreshold = (int)listing.Slider((float)settings.fleckThreshold, 50f, 2000f);
 
                 listing.Gap();
-                listing.Label("Particle systems from other mods (OFF by default - enable one by one, at your own risk):");
+                listing.Label(SettingsUI.T("FPP_ModdedSystemsHeader", "Particle systems from other mods (OFF by default - enable one by one, at your own risk):"));
                 if (FleckRegistry.moddedSystems.Count == 0)
                 {
-                    listing.Label("  (none detected in your mod list)");
+                    listing.Label(SettingsUI.T("FPP_ModdedSystemsNone", "  (none detected in your mod list)"));
                 }
                 else
                 {
@@ -229,7 +230,7 @@ namespace RimThreadedTTR
                         bool enabled = settings.IsModdedSystemEnabled(entry.settingsKey);
                         bool before = enabled;
                         listing.CheckboxLabeled("  " + entry.label, ref enabled,
-                            "Run this mod's particles in parallel too. Its code was not written for threading - if problems appear, turn this off. Applies instantly, no restart needed.");
+                            SettingsUI.T("FPP_ModdedSystemsTip", "Run this mod's particles in parallel too. Its code was not written for threading - if problems appear, turn this off. Applies instantly, no restart needed."));
                         if (enabled != before)
                         {
                             settings.SetModdedSystemEnabled(entry.settingsKey, enabled);
@@ -239,13 +240,13 @@ namespace RimThreadedTTR
             }
             listing.GapLine();
 
-            listing.CheckboxLabeled("Thread-safe random numbers (restart required)", ref settings.threadSafeRand,
-                "Gives every background thread its own random number stream so parallel code cannot corrupt the game's main random state. Needed by parallel flecks; also protects other mods that use background threads.");
-            listing.CheckboxLabeled("Redirect off-thread sounds to main thread (restart required)", ref settings.marshalSounds,
-                "If any code tries to play a sound from a background thread, queue it to play safely on the main thread instead of crashing Unity's audio.");
+            listing.CheckboxLabeled(SettingsUI.T("FPP_ThreadSafeRand", "Thread-safe random numbers (restart required)"), ref settings.threadSafeRand,
+                SettingsUI.T("FPP_ThreadSafeRandTip", "Gives every background thread its own random number stream so parallel code cannot corrupt the game's main random state. Needed by parallel flecks; also protects other mods that use background threads."));
+            listing.CheckboxLabeled(SettingsUI.T("FPP_MarshalSounds", "Redirect off-thread sounds to main thread (restart required)"), ref settings.marshalSounds,
+                SettingsUI.T("FPP_MarshalSoundsTip", "If any code tries to play a sound from a background thread, queue it to play safely on the main thread instead of crashing Unity's audio."));
 
             listing.GapLine();
-            listing.Label("Changes to the last two options apply after restarting the game.");
+            listing.Label(SettingsUI.T("FPP_RestartNote", "Changes to the last two options apply after restarting the game."));
 
             listing.GapLine();
             listing.Label("— TickList 并行（P2，我们加的）—");
@@ -272,11 +273,10 @@ namespace RimThreadedTTR
                 "实测在 Linux/Mono 上可用（12 方法已打、真实存档 11 分钟 0 崩溃），理论上仍有 Mono 原生终止风险。");
 
             listing.GapLine();
-            string simStatus = FleckRegistry.runtimeDisabled ? "OFF (safety switch)" : "OK";
-            string drawStatus = FleckRegistry.drawRuntimeDisabled ? "OFF (safety switch)" : "OK";
-            listing.Label("This session: " + FleckRegistry.parallelRunCount + " parallel simulation batches ("
-                + simStatus + "), " + FleckRegistry.drawParallelRunCount + " parallel draw batches (" + drawStatus + ").");
-            listing.Label("Counters grow during storms, fires and big fights - that is the mod working.");
+            string simStatus = FleckRegistry.runtimeDisabled ? SettingsUI.T("FPP_FleckOffSafety", "OFF (safety switch)") : SettingsUI.T("FPP_FleckOk", "OK");
+            string drawStatus = FleckRegistry.drawRuntimeDisabled ? SettingsUI.T("FPP_FleckOffSafety", "OFF (safety switch)") : SettingsUI.T("FPP_FleckOk", "OK");
+            listing.Label(SettingsUI.TF("FPP_SessionFlecks", "This session: {0} parallel simulation batches ({1}), {2} parallel draw batches ({3}).", FleckRegistry.parallelRunCount, simStatus, FleckRegistry.drawParallelRunCount, drawStatus));
+            listing.Label(SettingsUI.T("FPP_CountersNote", "Counters grow during storms, fires and big fights - that is the mod working."));
 
             listing.End();
             base.DoSettingsWindowContents(inRect);
