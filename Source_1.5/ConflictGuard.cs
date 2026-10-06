@@ -163,6 +163,31 @@ namespace FPSPlus
             return false;
         }
 
+        /// <summary>
+        /// 本 mod 自己的 Harmony 实例 ID。A2 附带修复：`uitstalie.fastload`（FastLoad 模块）
+        /// 也是我们自己的补丁，旧实现不认它 ⇒ 打开 ConflictGuard 时会把 FastLoad 的
+        /// 归因钩子（例如 runtimeProfilingFrames 打开后的 `AlertsReadout.AlertsReadoutUpdate`）
+        /// 误判成"外部 mod 冲突"，自己把自己的功能停掉。
+        /// </summary>
+        private static readonly string[] OwnOwners =
+        {
+            "boksu.fpsplus",
+            "boksu.rimthreadedttr",
+            "uitstalie.fastload",
+        };
+
+        private static bool IsOurs(string owner)
+        {
+            for (int i = 0; i < OwnOwners.Length; i++)
+            {
+                if (owner == OwnOwners[i])
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         private static string FirstForeignOwner(IList<Patch> patches)
         {
             if (patches == null)
@@ -172,7 +197,7 @@ namespace FPSPlus
             for (int i = 0; i < patches.Count; i++)
             {
                 string owner = patches[i].owner;
-                if (owner != "boksu.fpsplus" && owner != "boksu.rimthreadedttr")
+                if (!IsOurs(owner))
                 {
                     return owner;
                 }

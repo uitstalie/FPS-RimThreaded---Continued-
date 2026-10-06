@@ -680,8 +680,8 @@ namespace FPSPlus
                         l.Label("    " + ConflictGuard.Report[i]);
                     }
                     GUI.color = Color.white;
-                    l.CheckboxLabeled(T("FPP_ForceOn", "Force these features ON anyway (not recommended)"), ref s.ignoreConflictGuard,
-                        T("FPP_ForceOnTip", "Run FPS+ features even where another mod patches the same method. Both will fight over the same code - only use this if you know what you are doing."));
+                    l.CheckboxLabeled(T("FPP_ForceOn", "Manually force these features ON anyway (default: OFF - we auto-yield to the other mod)"), ref s.ignoreConflictGuard,
+                        T("FPP_ForceOnTip", "Default is OFF: when another mod patches the same method we switch only that feature off, so the two never fight over the same code. Tick this to override that and run both anyway - only use it if you know what you are doing."));
                 }
             }
             else

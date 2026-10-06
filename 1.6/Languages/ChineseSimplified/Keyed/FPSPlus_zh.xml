@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
   <FPP_AdvancedHeader>高级</FPP_AdvancedHeader>
   <FPP_AdvancedSub>冲突详情、原始计数器与逐项控制。</FPP_AdvancedSub>
@@ -67,8 +67,8 @@
   <FPP_FineTuning>精细调节</FPP_FineTuning>
   <FPP_FleckOffSafety>关闭（安全开关）</FPP_FleckOffSafety>
   <FPP_FleckOk>正常</FPP_FleckOk>
-  <FPP_ForceOn>仍然强制开启这些功能（不推荐）</FPP_ForceOn>
-  <FPP_ForceOnTip>即使另一个 mod 修改了相同的方法，也照常运行 FPS+ 功能。两者会争抢同一段代码——只有在你清楚后果时才使用。</FPP_ForceOnTip>
+  <FPP_ForceOn>手动强制开启这些功能（默认关闭：我们自动让位给另一个 mod）</FPP_ForceOn>
+  <FPP_ForceOnTip>默认关闭：当另一个 mod 修改了相同的方法时，我们只停用那一项功能，避免两者争抢同一段代码。勾选此项可手动覆盖该行为、照常运行两者——只有在你清楚后果时才使用。</FPP_ForceOnTip>
   <FPP_FpsGraphLabel>FPS — 最近 60 秒</FPP_FpsGraphLabel>
   <FPP_GameplayHeader>玩法优化</FPP_GameplayHeader>
   <FPP_GameplaySub>这些可能会轻微改变游戏行为——每个提示都会说明具体影响。</FPP_GameplaySub>

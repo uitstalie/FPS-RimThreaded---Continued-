@@ -60,7 +60,11 @@ namespace FPSPlus
         public bool quickSettingsButton = true;
         public bool welcomeShown = false;
         public Dictionary<string, bool> throttledComponents = new Dictionary<string, bool>();
-        public bool ignoreConflictGuard = true;   // B: 覆盖 4 项让位（测试用）
+        // A2 修复：默认 **false** = 尊重 ConflictGuard 的检测结果，冲突时自动让位（只停用冲突的那一项）。
+        // 旧默认值 true 让 ConflictGuard 形同虚设：消费点全是 `if (SuppressX && !Ov)`，
+        // 而 Ov 直接返回本字段 ⇒ 默认配置下即使检测到别的 mod 打了同一个方法，功能也永不退让。
+        // 想强制打开的用户可在 FPS+ 设置 > Advanced 手动勾选（文案保留"可手动覆盖"说明）。
+        public bool ignoreConflictGuard = false;
 
         public float throttleStrength = 1f;
         public int maxIntervalFrames = 600;
