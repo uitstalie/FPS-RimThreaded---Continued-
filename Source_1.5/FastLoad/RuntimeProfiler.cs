@@ -49,6 +49,83 @@ namespace FastLoad
         [ThreadStatic] private static Accumulator Local;
         private static readonly List<Accumulator> All = new List<Accumulator>();
         private static readonly object Gate = new object();
+
+        /// <summary>
+        /// A1 修复：归因**只统计主线程**（默认开）。
+        ///
+        /// 背景：本类的钩子默认挂在 P2 并行集内的方法上（`Mote.Tick` / `Projectile.Tick` /
+        /// `TickList.Tick` 等，见 FastLoadMod.InstallRuntimeHooks），worker 线程也会进出这些前缀/
+        /// 终结器。虽然累加器本身是 <see cref="ThreadStaticAttribute"/>（每线程一份），跨线程仍有
+        /// 三处**无同步共享**：
+        ///   1. `AppendReport` 在主线程枚举**其它线程正在写**的 Dictionary
+        ///      ⇒ `Collection was modified` / 撕裂读；
+        ///   2. `_ticks` / `_frames` / `_windowTicks` / `_windowStart` 是无锁 `++`（跨线程丢写）；
+        ///   3. `Diag()` 可能从 worker 调 `Profiler.Mark`（共享 List 无锁 `Add` + 非主线程 `Log.Message`）。
+        ///
+        /// 修法选 (b)「非主线程不记录」而不是 (a)「累加处加锁」，理由：
+        ///   * (b) 是**结构性**消除：非主线程根本不产生任何共享写，连 `AppendReport` 的跨线程枚举
+        ///     问题一并消失，不需要在 `AppendReport` 里长时间持锁；
+        ///   * (b) 在热路径上只是一次静态 bool 读，**零锁开销**（本类每秒被调数百万次，
+        ///     加锁会直接抵消掉它要测量的性能）；
+        ///   * 与本类既定口径一致 —— 类注释第一行就是「运行时（游戏内）**主线程**归因」，
+        ///     worker 线程的样本本来就不该混进来（会污染"主线程每 tick 在算什么"的结论）。
+        /// 代价：拿不到 worker 线程内部耗时。P2 并行部分本来就由 `TickListParallel` 单独计时。
+        /// </summary>
+        public static bool MainThreadOnly = true;
+
+        /// <summary>A1 实测证据：被主线程闸门丢掉的非主线程样本数（>0 就说明 P2 worker 真的在进出这些钩子）。</summary>
+        public static long OffMainThreadSamples;
+
+        /// <summary>
+        /// A1 自检：起一个后台线程，把全部记录入口各走一遍（Enter/Exit、SampledEnter/SampledExit、
+        /// CountTick/CountFrame、Diag，共 7 次调用），然后核对：
+        /// （a）这些调用**全部**被闸门拦下（OffMainThreadSamples 恰好增加 7）；
+        /// （b）没有新建任何累加器（`All` 数量不变）⇒ 即"并行模式下不再有并发写同一字典"。
+        /// 返回一行可直接打进日志的结论。
+        /// </summary>
+        public static string SelfTestMainThreadGate()
+        {
+            long skipsBefore = OffMainThreadSamples;
+            int accBefore;
+            lock (Gate) { accBefore = All.Count; }
+            Exception error = null;
+            System.Threading.Thread worker = new System.Threading.Thread(delegate ()
+            {
+                try
+                {
+                    Enter(null, "__A1_selftest__");   // 1
+                    Exit();                            // 2
+                    SampledEnter(null);                // 3
+                    SampledExit();                     // 4
+                    CountTick();                       // 5
+                    CountFrame();                      // 6
+                    Diag("__A1_selftest__");           // 7
+                }
+                catch (Exception e)
+                {
+                    error = e;
+                }
+            });
+            worker.IsBackground = true;
+            worker.Start();
+            worker.Join(2000);
+            long skips = OffMainThreadSamples - skipsBefore;
+            int accAfter;
+            lock (Gate) { accAfter = All.Count; }
+            return "A1 自检（后台线程走全部 7 个记录入口）：被闸门拦下 " + skips + "/7 · 新增累加器 "
+                + (accAfter - accBefore) + " 个（应为 0）· 异常=" + (error == null ? "无" : error.GetType().Name);
+        }
+
+        /// <summary>本线程是否参与归因（非主线程一律不记录）。</summary>
+        public static bool IsRecording
+        {
+            get
+            {
+                if (!MainThreadOnly) return true;
+                try { return UnityData.IsInMainThread; }
+                catch { return true; }   // 判定失败时宁可按"主线程"处理（单线程加载期）
+            }
+        }
         private static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, string> LabelCache =
             new System.Collections.Concurrent.ConcurrentDictionary<Type, string>();
         private static long _ticks;
@@ -71,6 +148,7 @@ namespace FastLoad
         /// </summary>
         public static void SampledEnter(object instance)
         {
+            if (!IsRecording) { OffMainThreadSamples++; return; }   // A1：非主线程不记录（也不压栈，保持配对）
             if (SampleFlags == null) SampleFlags = new List<bool>();
             bool take = SampleRate <= 1 || (Interlocked.Increment(ref _sampleCounter) % SampleRate) == 0;
             SampleFlags.Add(take);
@@ -81,6 +159,7 @@ namespace FastLoad
 
         public static void SampledExit()
         {
+            if (!IsRecording) { OffMainThreadSamples++; return; }   // A1
             if (SampleFlags == null || SampleFlags.Count == 0) return;
             int last = SampleFlags.Count - 1;
             bool take = SampleFlags[last];
@@ -95,6 +174,7 @@ namespace FastLoad
         /// <summary>进入一个被计时的区间（instance 可为 null，此时只统计 PhaseKey）。</summary>
         public static void Enter(object instance, string phaseKey)
         {
+            if (!IsRecording) { OffMainThreadSamples++; return; }   // A1
             try
             {
                 string typeKey = null;
@@ -146,6 +226,7 @@ namespace FastLoad
         /// <summary>离开区间：计算 exclusive 时间并累加（scale&gt;1 时按采样率放大）。</summary>
         public static void ExitScaled(int scale)
         {
+            if (!IsRecording) { OffMainThreadSamples++; return; }   // A1
             try
             {
                 if (Frames == null || Frames.Count == 0) return;
@@ -197,6 +278,7 @@ namespace FastLoad
         /// </summary>
         public static void Diag(string label)
         {
+            if (!IsRecording) { OffMainThreadSamples++; return; }   // A1：worker 线程不得调 Profiler.Mark
             if (DiagSeen.ContainsKey(label)) return;      // 快速路径：绝大多数调用只做一次字典查询
             try
             {
@@ -214,6 +296,7 @@ namespace FastLoad
         /// <summary>计数 tick，并顺带算出**实测 TPS**（每秒一个窗口；用于对着 720/900 目标调优）。</summary>
         public static void CountTick()
         {
+            if (!IsRecording) { OffMainThreadSamples++; return; }   // A1：标量计数也无锁
             _ticks++;
             _windowTicks++;
             double now = Profiler.Now;
@@ -227,7 +310,11 @@ namespace FastLoad
             _windowStart = now;
         }
 
-        public static void CountFrame() { _frames++; }
+        public static void CountFrame()
+        {
+            if (!IsRecording) { OffMainThreadSamples++; return; }   // A1：标量计数也无锁
+            _frames++;
+        }
 
         private static void Add(Dictionary<string, double> map, string key, double value)
         {
@@ -248,18 +335,22 @@ namespace FastLoad
             var phaseInclusive = new Dictionary<string, double>();
             var countTotals = new Dictionary<string, long>();
             List<Accumulator> snapshot;
-            lock (Gate) { snapshot = new List<Accumulator>(All); }
-            foreach (Accumulator acc in snapshot)
+            // A1：记录端已限定主线程；这里再持锁聚合一次，杜绝"读时被写"（开销可忽略，非热路径）
+            lock (Gate)
             {
-                foreach (var kv in acc.TypeMs) Add(typeTotals, kv.Key, kv.Value);
-                foreach (var kv in acc.ModMs) Add(modTotals, kv.Key, kv.Value);
-                foreach (var kv in acc.PhaseMs) Add(phaseTotals, kv.Key, kv.Value);
-                foreach (var kv in acc.PhaseInclusiveMs) Add(phaseInclusive, kv.Key, kv.Value);
-                foreach (var kv in acc.TypeCount)
+                snapshot = new List<Accumulator>(All);
+                foreach (Accumulator acc in snapshot)
                 {
-                    long c;
-                    countTotals.TryGetValue(kv.Key, out c);
-                    countTotals[kv.Key] = c + kv.Value;
+                    foreach (var kv in acc.TypeMs) Add(typeTotals, kv.Key, kv.Value);
+                    foreach (var kv in acc.ModMs) Add(modTotals, kv.Key, kv.Value);
+                    foreach (var kv in acc.PhaseMs) Add(phaseTotals, kv.Key, kv.Value);
+                    foreach (var kv in acc.PhaseInclusiveMs) Add(phaseInclusive, kv.Key, kv.Value);
+                    foreach (var kv in acc.TypeCount)
+                    {
+                        long c;
+                        countTotals.TryGetValue(kv.Key, out c);
+                        countTotals[kv.Key] = c + kv.Value;
+                    }
                 }
             }
             var phases = new List<KeyValuePair<string, double>>(phaseTotals);
