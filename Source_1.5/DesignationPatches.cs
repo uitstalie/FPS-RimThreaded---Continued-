@@ -29,6 +29,7 @@ namespace FPSPlus
         private static DesignationManager cachedManager;
         private static CellRect cachedRect;
         private static int cachedCount = -1;
+        private static int cachedVersionHash = 0;   // B2：上一次扫描时各 List<Designation>._version 的组合
         private static int cacheFrame = -1000000;
         private static readonly Dictionary<DesignationDef, List<Designation>> visibleBatchable = new Dictionary<DesignationDef, List<Designation>>();
         private static readonly List<Designation> visibleSpecial = new List<Designation>();
@@ -103,6 +104,13 @@ namespace FPSPlus
 
             // ---- our cached scan for everything else ----
             int totalOther = 0;
+            // B2：把"内容是否变了"从"只数总数"升级为**精确的 `List<Designation>._version` 组合哈希**
+            // （`AccessTools.FieldRefAccess` 读，不引入 Publicizer）。计数相同但内容不同的情况
+            // （删一个 + 加一个）以前最多有 10 帧的过期窗口，现在立刻重扫。
+            // 版本读不到时保守处理：每帧都重扫（versionOk=false 直接 refresh）。
+            bool versionOk = true;
+            int versionHash = 17;
+            bool versionCheck = RimThreadedTTR.ListVersion.Enabled;
             for (int i = 0; i < defs.Count; i++)
             {
                 DesignationDef def = defs[i];
@@ -114,7 +122,24 @@ namespace FPSPlus
                 if (list != null)
                 {
                     totalOther += list.Count;
+                    if (versionCheck)
+                    {
+                        int v;
+                        if (RimThreadedTTR.ListVersion<Designation>.TryGet(list, out v))
+                        {
+                            versionHash = versionHash * 31 + v;
+                        }
+                        else
+                        {
+                            versionOk = false;
+                        }
+                    }
                 }
+            }
+            if (!versionCheck)
+            {
+                // B2 被关掉：不参与刷新判定，保持原有行为（计数 + 相机 + 10 帧）
+                versionHash = cachedVersionHash;
             }
 
             int frame = Time.frameCount;
@@ -122,12 +147,17 @@ namespace FPSPlus
                 || viewRect.minX != cachedRect.minX || viewRect.maxX != cachedRect.maxX
                 || viewRect.minZ != cachedRect.minZ || viewRect.maxZ != cachedRect.maxZ
                 || totalOther != cachedCount
+                || !versionOk
+                || versionHash != cachedVersionHash
+                // 10 帧兜底仍然保留：设计目标（被狩猎的动物等）会移动着进出视口，
+                // 而"列表内容"没变 ⇒ 版本号覆盖不到这一点。
                 || frame - cacheFrame >= 10;
             if (refresh)
             {
                 cachedManager = __instance;
                 cachedRect = viewRect;
                 cachedCount = totalOther;
+                cachedVersionHash = versionHash;
                 cacheFrame = frame;
                 foreach (KeyValuePair<DesignationDef, List<Designation>> kv in visibleBatchable)
                 {
@@ -228,6 +258,7 @@ namespace FPSPlus
         {
             cachedManager = null;
             cachedCount = -1;
+            cachedVersionHash = 0;
             foreach (KeyValuePair<DesignationDef, List<Designation>> kv in visibleBatchable)
             {
                 kv.Value.Clear();

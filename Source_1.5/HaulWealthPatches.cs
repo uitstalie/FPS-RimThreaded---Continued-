@@ -27,14 +27,38 @@ namespace FPSPlus
         {
             public int expireTick;
             public byte priority;
+            /// <summary>
+            /// B2：记录写入时**该地图"可存放目的地"列表**的 `List&lt;IHaulDestination&gt;._version`。
+            /// 建/拆货架、加/删储物区都会让这个 List 结构性变化 ⇒ 版本不同 ⇒ 立刻重算，
+            /// 不用等 250 tick 的 TTL，也不依赖 StorageChanged 事件是否覆盖了那条路径。
+            /// 读不到版本（返回 false）时**一律不复用缓存**（保守重算）。
+            /// </summary>
+            public int destVersion;
+            public bool destVersionKnown;
         }
 
         private static readonly Dictionary<Thing, NoStoreRec> noStorage = new Dictionary<Thing, NoStoreRec>();
         private const int MemoryTicks = 250;
 
         public static long HaulLookupsSkipped;
+        public static long HaulLookupsInvalidatedByVersion;
 
-        public static bool TryFindBestBetterStorageFor_Prefix(Thing t, StoragePriority currentPriority, ref IntVec3 foundCell, ref IHaulDestination haulDestination, ref bool __result, out bool __state)
+        /// <summary>取该地图"可存放目的地"列表（原版 `HaulDestinationManager.allHaulDestinationsInOrder`）。</summary>
+        private static List<IHaulDestination> DestinationsOf(Map map)
+        {
+            try
+            {
+                return map != null && map.haulDestinationManager != null
+                    ? map.haulDestinationManager.AllHaulDestinationsListForReading
+                    : null;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public static bool TryFindBestBetterStorageFor_Prefix(Thing t, Map map, StoragePriority currentPriority, ref IntVec3 foundCell, ref IHaulDestination haulDestination, ref bool __result, out bool __state)
         {
             __state = false;
             FPSPlusSettings s = FPSPlusMod.Settings;
@@ -49,17 +73,31 @@ namespace FPSPlus
             NoStoreRec rec;
             if (noStorage.TryGetValue(t, out rec) && rec.priority == (byte)currentPriority && Find.TickManager.TicksGame < rec.expireTick)
             {
-                foundCell = IntVec3.Invalid;
-                haulDestination = null;
-                __result = false;
-                HaulLookupsSkipped++;
-                __state = true; // served from memory - postfix must not re-arm
-                return false;
+                // B2：内容变了（目的地列表版本不同）就作废——保守重算。
+                // B2 关闭时退回原有的"仅 TTL + 事件失效"行为。
+                bool stillValid = true;
+                if (RimThreadedTTR.ListVersion.Enabled)
+                {
+                    int version;
+                    stillValid = rec.destVersionKnown
+                        && RimThreadedTTR.ListVersion<IHaulDestination>.TryGet(DestinationsOf(map), out version)
+                        && version == rec.destVersion;
+                }
+                if (stillValid)
+                {
+                    foundCell = IntVec3.Invalid;
+                    haulDestination = null;
+                    __result = false;
+                    HaulLookupsSkipped++;
+                    __state = true; // served from memory - postfix must not re-arm
+                    return false;
+                }
+                HaulLookupsInvalidatedByVersion++;
             }
             return true;
         }
 
-        public static void TryFindBestBetterStorageFor_Postfix(Thing t, StoragePriority currentPriority, bool __result, bool __state)
+        public static void TryFindBestBetterStorageFor_Postfix(Thing t, Map map, StoragePriority currentPriority, bool __result, bool __state)
         {
             FPSPlusSettings s = FPSPlusMod.Settings;
             if (s == null || !s.haulStorageMemory || t == null || __state)
@@ -82,6 +120,9 @@ namespace FPSPlus
             NoStoreRec rec;
             rec.expireTick = Find.TickManager.TicksGame + MemoryTicks;
             rec.priority = (byte)currentPriority;
+            int version;
+            rec.destVersionKnown = RimThreadedTTR.ListVersion<IHaulDestination>.TryGet(DestinationsOf(map), out version);
+            rec.destVersion = version;
             noStorage[t] = rec;
         }
 
