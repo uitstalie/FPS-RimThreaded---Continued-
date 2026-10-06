@@ -43,7 +43,13 @@ namespace FPSPlus
         public bool componentProfiler = true;
         public bool autoTuneAlerts = true;
         public bool masterEnabled = true;
-        public bool factionThrottle = true;
+        // A4 复核：FactionManagerTick/2 **默认关闭**。它不是"只有定时器"——
+        //   * Faction.CheckReachNaturalGoodwill 用 `naturalGoodwillTimer++`（阈值 3,000,000）⇒ 速率减半；
+        //   * KidnappedPawnsTracker.KidnappedPawnsTrackerTick 用 `TicksGame % 15051 != 0`（15051 是奇数）
+        //     ⇒ "只放行偶数 tick"会把一半的赎回判定机会直接丢掉 ⇒ 速率减半。
+        // IdeoManagerTick/2 经复核**保留默认开启**：无每 tick 累积量（Precept_Role 只是幂等 Recache，
+        // 仪式义务触发里唯一精确 tick 的 RitualObligationTrigger_Date 已由 IdeoPatches 用 2-tick 窗口补偿）。
+        public bool factionThrottle = false;
         public bool ideoThrottle = true;
         public bool particleCap = true;
         public int particleCapPerFrame = 150;
@@ -116,7 +122,7 @@ namespace FPSPlus
             {
                 throttledComponents = new Dictionary<string, bool>();
             }
-            Scribe_Values.Look(ref ignoreConflictGuard, "ignoreConflictGuard", true);
+            Scribe_Values.Look(ref ignoreConflictGuard, "ignoreConflictGuard", false);
             Scribe_Values.Look(ref animalWanderThrottle, "animalWanderThrottle", false);
             Scribe_Values.Look(ref animalWanderMult, "animalWanderMult", 4);
             Scribe_Values.Look(ref junkCleanup, "junkCleanup", false);

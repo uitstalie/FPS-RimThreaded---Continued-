@@ -453,8 +453,8 @@ namespace FPSPlus
                 T("FPP_WealthStretchTip", "The colony wealth recount (a small periodic hiccup on big maps) runs every ~4 in-game hours instead of ~1.4. Raid sizing reacts slightly slower to wealth changes."));
             l.CheckboxLabeled(T("FPP_OffMapSleep", "Off-map pawn sleep"), ref s.offMapSleep,
                 T("FPP_OffMapSleepTip", "Off-map pawns (trader stock, mercenary pools, faction NPCs) are allowed to fully sleep even when modded health markers would keep them awake. They wake the moment they matter. Their wounds/diseases pause while asleep."));
-            l.CheckboxLabeled(T("FPP_FactionThrottle", "Faction throttle"), ref s.factionThrottle,
-                T("FPP_FactionThrottleTip", "The faction system (45+ factions in big modlists) is processed every tick even though its internal timers only fire on even intervals. This runs it 1-in-2 ticks - all timers still fire on schedule, half the cost."));
+            l.CheckboxLabeled(T("FPP_FactionThrottle", "Faction throttle (OFF by default - changes rates)"), ref s.factionThrottle,
+                T("FPP_FactionThrottleTip", "Runs the faction system 1-in-2 ticks. Warning: it is NOT a pure timer - Faction.naturalGoodwillTimer is a per-tick counter (rate halved) and KidnappedPawnsTracker uses an odd modulus (%15051) so half of its ransom checks are lost. Off by default; only enable if you accept those rate changes."));
             l.CheckboxLabeled(T("FPP_IdeoThrottle", "Ideology throttle"), ref s.ideoThrottle,
                 T("FPP_IdeoThrottleTip", "Belief systems tick every ritual and precept every tick - ideology-heavy saves carry 1000+ of them. This runs the system 1-in-2 ticks. Ritual dates are specially protected: every scheduled ritual still fires, at most 1/60 second late."));
             bool roomWas = s.roomStatCache;
