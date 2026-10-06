@@ -42,28 +42,58 @@ namespace RimThreadedTTR
         public bool threadSafeRand = true;
         public bool marshalSounds = true;
 
-        public bool parallelTargeting = true;
-        public int targetingThreshold = 8;
+        // A3：`parallelTargeting` / `targetingThreshold` 已删除 —— TargetingPatches 从未接线
+        // （全仓库无 `TargetingPatches.Apply` 调用点），这两个设置项对运行时零影响，属死设置。
+        // 死代码比接线风险低 ⇒ 直接移除（原本也没有界面条目）。
+        // 微基准需要的开关现在留在 TargetingPatches 自己的静态字段里，不参与 Scribe。
 
-        // ── 降频（实测约 −200 µs/tick；默认只开"不影响数值"的部分）──
-        /// <summary>风（纯风味/涡轮读数）每 4 tick；气体扩散、搬运清单每 2 tick。</summary>
+        // ── 降频（默认只开"按间隔结算/纯视觉/幂等轮询"的部分）──
+        // A4 复核（2026-10-04，反编译 1.6.4871 逐方法核对）：见 ThrottlePatches 顶部注释与
+        // common/rimthreaded-1.6/DELIVERY.md。结论：只保留"可跳"类，
+        // 凡"每 tick 累积/游标推进 ⇒ 会改变速率"的一律默认 false。
+        /// <summary>风每 4 tick（只影响植物摇摆相位，纯视觉）+ 搬运清单轮询每 2 tick（只增加发现延迟）。</summary>
         public bool throttleSimulation = true;
-        /// <summary>纯视觉：Effecter 维护与小人特效每 2 tick。</summary>
+        /// <summary>纯视觉：Effecter 维护与小人特效每 2 tick（Effecter.ticksLeft 每 tick 递减 ⇒ 视觉特效寿命 2 倍）。</summary>
         public bool throttleVisual = true;
-        /// <summary>心情需求每 2 次结算（**改玩法节奏**，默认关）。</summary>
-        public bool throttleMood = true;   // 5) 实测 98 µs/tick（改心情节奏，可在设置里关）
+        /// <summary>
+        /// 气体扩散/消散每 2 tick。**已撤，默认 false**：`Verse.GasGrid.Tick` 用
+        /// `cycleIndexDissipation/Diffusion++` 游标推进，每次访问按固定量扣减密度
+        /// （`Math.Max(density - RoundToInt(4f*num), 0)`）⇒ 跳过一半 tick = 气体消散/扩散**速率减半**。
+        /// </summary>
+        public bool throttleGas = false;
+        /// <summary>
+        /// 心情需求每 2 次结算。**已撤，默认 false**：`Need_Mood.NeedInterval` 只在
+        /// `Thing.IsHashIntervalTick(150, delta)` 命中时被调用，而 `Gen.HashOffsetTicks() =
+        /// TicksGame + thingIDNumber.HashOffset()`（HashOffset 会翻转奇偶）⇒ 哈希偏移为奇数的
+        /// 小人其命中 tick 全是奇数，会被"只放行偶数 tick"的前缀**全部跳过**（需求/想法/观察者
+        /// 区间对这部分小人完全不结算）。不是"改节奏"，是"完全不跑"。
+        /// </summary>
+        public bool throttleMood = false;
         /// <summary>门每 2 tick（实测 46 µs/tick）。</summary>
         public bool throttleDoor = false;  // 已撤：Building_Door.Tick 开关门进度每 tick 累积，跳过=变慢（与 LayDown 同类 bug）
         /// <summary>睡觉小人的 JobDriver 每 2 tick（实测 41 µs/tick）。</summary>
         public bool throttleLayDown = false; // 已撤：睡眠回休息是每 tick 累积，跳过=恢复速度砍半（用户实测 bug）
-        /// <summary>故事叙述者每 2 tick（实测 55 µs/tick）。</summary>
+        /// <summary>故事叙述者每 2 tick（实测 55 µs/tick）。绝对 tick 判定（FireTick / %1000）⇒ 可跳。</summary>
         public bool throttleStoryteller = true;
         /// <summary>3) Mugirl.CorporateNetwork（GameComponent，单次 40 µs）每 4 tick。</summary>
         public bool throttleMugirl = true;
-        /// <summary>6) 野生动物（无派系动物）的 AI/寻路每 2 tick（需求/健康仍每 tick）。</summary>
-        public bool throttleWildAnimals = true;
+        /// <summary>
+        /// 野生动物（无派系动物）的 AI/寻路每 2 tick。**已撤，默认 false**：
+        /// `Pawn_PathFollower.PatherTick` 每次调用 `nextCellCostLeft -= CostToPayThisTick()`（每次约 1）
+        /// ⇒ 跳过一半 = **移动速度减半**；`Pawn_MindState.MindStateTickInterval(delta)` 的 delta 由
+        /// 调用方给出、跳过即为丢失 ⇒ 精神/灵感/床铺想法等子区间速率减半。
+        /// </summary>
+        public bool throttleWildAnimals = false;
         /// <summary>A：所有小人的 AI（MindState + Pather）每 2 tick（需求/健康仍每 tick）。默认关。</summary>
         public bool throttlePawnAI = false;
+
+        // ── B 组：借鉴评估报告思路、从原版 IL 独立实现（不抄 Kingfisher）──
+        /// <summary>B1：原版 `static` 查询结果缓冲 → 每实例缓冲（ListerBuildings.ofDef/ofGroup、ImmunityHandler）。</summary>
+        public bool optStaticBuffers = true;
+        /// <summary>B2：用 `List&lt;T&gt;._version`（AccessTools.FieldRefAccess，无需 Publicizer）做缓存失效键。</summary>
+        public bool optListVersion = true;
+        /// <summary>B3：`Verse.ListerThings.Remove` 尾部优先删除（与原版逐环节等价，只换删除方向）。</summary>
+        public bool optTailRemove = true;
         /// <summary>真多线程：HediffSet 每实例锁（并行 Pawn tick 的前提）。默认关，压测通过后再开。</summary>
         public bool hediffLock = false;
         /// <summary>探针：统计每 tick 的 Thing.DoTick 次数（P2 决策用，测量后应关闭）。</summary>
@@ -123,20 +153,22 @@ namespace RimThreadedTTR
             }
             Scribe_Values.Look(ref threadSafeRand, "threadSafeRand", true);
             Scribe_Values.Look(ref marshalSounds, "marshalSounds", true);
-            Scribe_Values.Look(ref parallelTargeting, "parallelTargeting", true);
             Scribe_Values.Look(ref throttleSimulation, "throttleSimulation", true);
             Scribe_Values.Look(ref throttleVisual, "throttleVisual", true);
-            Scribe_Values.Look(ref throttleMood, "throttleMood", true);
+            Scribe_Values.Look(ref throttleGas, "throttleGas", false);
+            Scribe_Values.Look(ref throttleMood, "throttleMood", false);
             Scribe_Values.Look(ref throttleDoor, "throttleDoor", false);
             Scribe_Values.Look(ref throttleLayDown, "throttleLayDown", false);
             Scribe_Values.Look(ref throttleStoryteller, "throttleStoryteller", true);
             Scribe_Values.Look(ref throttleMugirl, "throttleMugirl", true);
-            Scribe_Values.Look(ref throttleWildAnimals, "throttleWildAnimals", true);
+            Scribe_Values.Look(ref throttleWildAnimals, "throttleWildAnimals", false);
             Scribe_Values.Look(ref throttlePawnAI, "throttlePawnAI", false);
+            Scribe_Values.Look(ref optStaticBuffers, "optStaticBuffers", true);
+            Scribe_Values.Look(ref optListVersion, "optListVersion", true);
+            Scribe_Values.Look(ref optTailRemove, "optTailRemove", true);
             Scribe_Values.Look(ref hediffLock, "hediffLock", false);
             Scribe_Values.Look(ref parallelPawnTicks, "parallelPawnTicks", false);
             Scribe_Values.Look(ref parallelPawnHealth, "parallelPawnHealth", false);
-            Scribe_Values.Look(ref targetingThreshold, "targetingThreshold", 8);
 #if TTR_MERGED
             if (fpsSettings == null)
             {
@@ -272,13 +304,24 @@ namespace RimThreadedTTR
                 + (TickListParallel.DisabledByErrors ? " · ⚠ 已因错误自动停用" : ""));
 
             listing.GapLine();
-            listing.Label("— 降频（Performance-Optimizer 风格）—");
-            listing.CheckboxLabeled("模拟类：风 /4 · 气体 /2 · 搬运清单 /2", ref settings.throttleSimulation,
-                "实测省约 190 µs/tick。风是纯风味；气体扩散与搬运清单刷新频率减半（轻微玩法影响）。");
+            listing.Label("— 降频（Performance-Optimizer 风格，A4 已复核）—");
+            listing.CheckboxLabeled("模拟类：风 /4 · 搬运清单 /2", ref settings.throttleSimulation,
+                "A4 保留项：风只影响植物摇摆相位（风值本身是 TicksAbs 的纯函数）、搬运清单只是幂等轮询（最多 2 倍发现延迟）。两者都不改变任何速率。");
+            listing.CheckboxLabeled("⚠ 气体扩散/消散 每 2 tick（改变速率，默认关）", ref settings.throttleGas,
+                "GasGrid.Tick 用游标推进 + 每次按固定量扣减密度 ⇒ 跳过一半 tick = 气体消散/扩散速率减半（毒气/腐臭停留时间翻倍）。A4 复核后由 throttleSimulation 拆出，默认关。");
             listing.CheckboxLabeled("纯视觉：Effecter / 小人特效 每 2 tick", ref settings.throttleVisual,
-                "实测省约 19 µs/tick，不影响数值。");
-            listing.CheckboxLabeled("心情需求每 2 次结算（改玩法节奏，默认关）", ref settings.throttleMood,
-                "省约 47 µs/tick，但会改变心情变化节奏。");
+                "只影响视觉特效的寿命与播放速率（Effecter.ticksLeft 每 tick 递减），不改变游戏数值。");
+            listing.CheckboxLabeled("⚠ 心情需求每 2 次结算（速率类，默认关）", ref settings.throttleMood,
+                "Need_Mood.NeedInterval 只在 IsHashIntervalTick(150) 命中时被调用；哈希偏移为奇数的小人命中 tick 全是奇数，会被本前缀全部跳过 ⇒ 对这部分小人**完全不结算**。A4 复核后默认关。");
+
+            listing.GapLine();
+            listing.Label("— B 组：从原版 IL 独立实现（不抄 Kingfisher）—");
+            listing.CheckboxLabeled("B1：静态查询缓冲 → 每实例缓冲", ref settings.optStaticBuffers,
+                "把原版 ListerBuildings 的 static `allBuildingsColonistOfDefResult`/`...OfGroupResult` 与 ImmunityHandler 的 static `tmpNeededImmunitiesNow` 换成每实例缓冲（ConditionalWeakTable），消除跨实例/跨线程共享的查询期临时列表。");
+            listing.CheckboxLabeled("B2：用 List<T>._version 做缓存失效键", ref settings.optListVersion,
+                "用 AccessTools.FieldRefAccess 读 mscorlib 的私有 `_version`（不引入 Publicizer），让储物目的地缓存与指定区扫描缓存按「内容真的变了」精确失效；读不到时保守重算。");
+            listing.CheckboxLabeled("B3：ListerThings.Remove 尾部优先删除", ref settings.optTailRemove,
+                "只把 List<T>.Remove（从头扫）换成 LastIndexOf+RemoveAt（从尾扫）；回调、stateHashByGroup++ 等其余环节逐行保持原样。");
 
             listing.GapLine();
             listing.CheckboxLabeled("实验：Mono 上也启用 Fleck 闭合泛型补丁", ref settings.experimentalFleckOnMono,

@@ -97,7 +97,17 @@ namespace RimThreadedTTR
                     PatchSounds(harmony);      // 原有：PlayOneShot 编组（不能被误关）
                 }
                 ThrottlePatches.Apply(harmony, settings);
+                // ── B 组：从原版 IL 独立实现（评估报告 §7.1 的三个借鉴点，不抄 Kingfisher）──
+                ListVersion.Enabled = settings.optListVersion;          // B2 的失效键总开关
+                if (settings.optStaticBuffers) StaticBufferPatches.Apply(harmony);   // B1
+                if (settings.optTailRemove) ListerThingsTailPatches.Apply(harmony);  // B3
+                Log.Message("[RimThreadedTTR] B 组开关：B1 静态缓冲→每实例=" + settings.optStaticBuffers
+                    + "，B2 List._version 失效键=" + settings.optListVersion
+                    + "（可用=" + ListVersion<int>.Available + "）"
+                    + "，B3 尾部删除=" + settings.optTailRemove);
                 if (settings.probeDoTick) DoTickProbe.Apply(harmony);
+                // A1：主线程闸门自检（后台线程调全部记录入口，应全部被拦下且不新建累加器）
+                Log.Message("[RimThreadedTTR] " + FastLoad.RuntimeProfiler.SelfTestMainThreadGate());
                 if (settings.parallelTickList && TickListParallel.Init())
                 {
                     TickListParallel.Enabled = true;

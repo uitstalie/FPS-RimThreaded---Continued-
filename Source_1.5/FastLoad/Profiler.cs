@@ -287,6 +287,33 @@ namespace FastLoad
             StaticCtorTiming.AppendReport(sb);
             RuntimeProfiler.AppendReport(sb);
 
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                "  A1 主线程闸门：丢弃的非主线程样本 = {0}（此前这些会并发写归因 Dictionary）",
+                RuntimeProfiler.OffMainThreadSamples));
+            sb.AppendLine("  A1 自检结论：" + RuntimeProfiler.SelfTestMainThreadGate());
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                "  P2 TickList 并行：批次 {0} · 对象 {1} · worker {2} · 串行回退 {3} · 错误 {4} · 因错误停用={5}",
+                RimThreadedTTR.TickListParallel.Batches, RimThreadedTTR.TickListParallel.Items,
+                RimThreadedTTR.TickListParallel.Workers, RimThreadedTTR.TickListParallel.SerialFallbacks,
+                RimThreadedTTR.TickListParallel.ErrorCount, RimThreadedTTR.TickListParallel.DisabledByErrors));
+
+            // ── B 组（从原版 IL 独立实现）的实测计数器：证明"真的被调用了"而不只是"挂上了" ──
+            sb.AppendLine();
+            sb.AppendLine("--- B 组（从原版 IL 独立实现，A4 报告 §7.1 的三个借鉴点）---");
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                "  B1 每实例缓冲：ListerBuildings.ofDef {0} 次 · ofGroup {1} 次 · ImmunityHandler.NeededImmunitiesNow {2} 次",
+                RimThreadedTTR.StaticBufferPatches.OfDefQueries,
+                RimThreadedTTR.StaticBufferPatches.OfGroupQueries,
+                RimThreadedTTR.StaticBufferPatches.ImmunityQueries));
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                "  B2 List<T>._version：可用={0} · 储物记忆命中 {1} 次 · 因版本变化而作废重算 {2} 次",
+                RimThreadedTTR.ListVersion<int>.Available,
+                FPSPlus.HaulWealthPatches.HaulLookupsSkipped,
+                FPSPlus.HaulWealthPatches.HaulLookupsInvalidatedByVersion));
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                "  B3 ListerThings.Remove 尾部删除：{0} 次（3 处调用点已改写）",
+                RimThreadedTTR.ListerThingsTailPatches.TailRemoves));
+
             sb.AppendLine();
             sb.AppendLine("--- XPath 快速路径 ---");
             sb.AppendLine(string.Format(CultureInfo.InvariantCulture,

@@ -101,7 +101,7 @@ namespace FPSPlus
             Scribe_Values.Look(ref componentProfiler, "componentProfiler", true);
             Scribe_Values.Look(ref autoTuneAlerts, "autoTuneAlerts", true);
             Scribe_Values.Look(ref masterEnabled, "masterEnabled", true);
-            Scribe_Values.Look(ref factionThrottle, "factionThrottle", true);
+            Scribe_Values.Look(ref factionThrottle, "factionThrottle", false);
             Scribe_Values.Look(ref ideoThrottle, "ideoThrottle", true);
             Scribe_Values.Look(ref particleCap, "particleCap", true);
             Scribe_Values.Look(ref particleCapPerFrame, "particleCapPerFrame", 150);
