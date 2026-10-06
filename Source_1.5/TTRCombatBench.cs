@@ -54,10 +54,12 @@ namespace RimThreadedTTR
                 startTick = Find.TickManager.TicksGame;
                 if (GenCommandLine.CommandLineArgPassed("ttrnopar"))
                 {
-                    TTRMod.Instance.settings.parallelTargeting = false;
+                    // A3：原为 TTRSettings.parallelTargeting（死设置），现为 TargetingPatches 静态字段
+                    TargetingPatches.ParallelTargetingEnabled = false;
+                    TargetingPatches.runtimeDisabled = true;
                 }
                 Log.Message("[TTRCombatBench] started. Parallel targeting: "
-                    + TTRMod.Instance.settings.parallelTargeting + ".");
+                    + TargetingPatches.ParallelTargetingEnabled + ".");
             }
             int elapsed = Find.TickManager.TicksGame - startTick;
 
@@ -78,7 +80,7 @@ namespace RimThreadedTTR
                 double tps = ticksInWindow * 1000.0 / watch.ElapsedMilliseconds;
                 Log.Message(string.Format(
                     "[TTRCombatBench] RESULT parallelTargeting={0} tps={1:F1} targetingBatches={2} disabled={3}",
-                    TTRMod.Instance.settings.parallelTargeting, tps,
+                    TargetingPatches.ParallelTargetingEnabled, tps,
                     TargetingPatches.parallelRunCount, TargetingPatches.runtimeDisabled));
                 Application.Quit();
             }

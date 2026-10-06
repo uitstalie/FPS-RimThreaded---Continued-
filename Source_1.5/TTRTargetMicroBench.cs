@@ -123,23 +123,24 @@ namespace RimThreadedTTR
                 radius++;
             }
 
-            TTRSettings settings = TTRMod.Instance.settings;
-            settings.targetingThreshold = 1; // always parallelize during the ON pass
+            // A3：这两个开关已从 TTRSettings 移除（死设置），改为 TargetingPatches 的静态字段，
+            // 只服务这个命令行微基准（-ttrtargetmicrobench）。
+            TargetingPatches.TargetingThreshold = 1; // always parallelize during the ON pass
 
             // Warm up both paths (JIT, caches).
-            settings.parallelTargeting = false;
+            TargetingPatches.ParallelTargetingEnabled = false;
             for (int i = 0; i < 200; i++) { scoreList(targets, shooter, verb); }
-            settings.parallelTargeting = true;
+            TargetingPatches.ParallelTargetingEnabled = true;
             for (int i = 0; i < 200; i++) { scoreList(targets, shooter, verb); }
 
             // Measure vanilla (serial).
-            settings.parallelTargeting = false;
+            TargetingPatches.ParallelTargetingEnabled = false;
             Stopwatch swSerial = Stopwatch.StartNew();
             for (int i = 0; i < Iterations; i++) { scoreList(targets, shooter, verb); }
             swSerial.Stop();
 
             // Measure parallel.
-            settings.parallelTargeting = true;
+            TargetingPatches.ParallelTargetingEnabled = true;
             TargetingPatches.runtimeDisabled = false;
             Stopwatch swParallel = Stopwatch.StartNew();
             for (int i = 0; i < Iterations; i++) { scoreList(targets, shooter, verb); }

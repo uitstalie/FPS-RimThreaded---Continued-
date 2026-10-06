@@ -70,6 +70,14 @@ namespace RimThreadedTTR
         [ThreadStatic]
         private static List<IntVec3> tlsDestCells;
 
+        // A3 修复：`TTRSettings.parallelTargeting` / `targetingThreshold` 是**死设置**——
+        // 本类的两个 Apply 从来没有调用点（全仓库 grep 无结果），这两个设置项对运行时零影响。
+        // 按"死代码比接线风险低"的原则，已把这两个**可持久化设置项**删除；
+        // 保留为本类的普通静态字段，仅供 -ttrtargetmicrobench / -ttrcombatbench 这类
+        // 命令行微基准代码使用（默认关闭，不参与 Scribe、不出现在设置界面）。
+        public static bool ParallelTargetingEnabled;
+        public static int TargetingThreshold = 8;
+
         public static void Apply(Harmony harmony)
         {
             vanillaAssembly = typeof(Verb).Assembly;
@@ -92,12 +100,11 @@ namespace RimThreadedTTR
             {
                 maxCandidatesSeen = rawTargets.Count;
             }
-            TTRSettings settings = TTRMod.Instance.settings;
-            if (runtimeDisabled || !settings.parallelTargeting)
+            if (runtimeDisabled || !ParallelTargetingEnabled)
             {
                 return true;
             }
-            if (rawTargets == null || rawTargets.Count < settings.targetingThreshold)
+            if (rawTargets == null || rawTargets.Count < TargetingThreshold)
             {
                 return true;
             }

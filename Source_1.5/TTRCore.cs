@@ -148,6 +148,9 @@ namespace RimThreadedTTR
                 // static buffers), and fork-join overhead exceeds the small LOS
                 // gain at realistic candidate counts. Left unwired on purpose;
                 // see PORTING_NOTES.md.
+                // A3（2026-10-04）：既然永远不接线，`TTRSettings.parallelTargeting` /
+                // `targetingThreshold` 这两个"死设置"已删除（原本也没有界面条目），
+                // 免得用户在设置里看见无效开关。微基准的开关改放在 TargetingPatches 静态字段。
                 PatchDrainHook(harmony);
 
                 Log.Message("[RimThreadedTTR] Initialized. Worker threads: " + settings.MaxThreadsClamped
