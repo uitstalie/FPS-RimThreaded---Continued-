@@ -53,7 +53,7 @@ namespace RimThreadedTTR
         /// <summary>心情需求每 2 次结算（**改玩法节奏**，默认关）。</summary>
         public bool throttleMood = true;   // 5) 实测 98 µs/tick（改心情节奏，可在设置里关）
         /// <summary>门每 2 tick（实测 46 µs/tick）。</summary>
-        public bool throttleDoor = true;
+        public bool throttleDoor = false;  // 已撤：Building_Door.Tick 开关门进度每 tick 累积，跳过=变慢（与 LayDown 同类 bug）
         /// <summary>睡觉小人的 JobDriver 每 2 tick（实测 41 µs/tick）。</summary>
         public bool throttleLayDown = false; // 已撤：睡眠回休息是每 tick 累积，跳过=恢复速度砍半（用户实测 bug）
         /// <summary>故事叙述者每 2 tick（实测 55 µs/tick）。</summary>
