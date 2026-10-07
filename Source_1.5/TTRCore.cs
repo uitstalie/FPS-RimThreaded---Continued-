@@ -112,10 +112,16 @@ namespace RimThreadedTTR
                 {
                     TickListParallel.Enabled = true;
                     TickListParallel.SettingsDefault = true;
-                    TickListParallel.DefaultWorkers = TickListParallel.Workers;
-                    TickListParallel.DefaultKeepPawnBuildingSerial = TickListParallel.KeepPawnBuildingSerial;
+                    // A（2026-10-07 修）：顺序修正。原来 DefaultWorkers 取的是**字段初始值 4**
+                    // （此时 settings 推导值还没写进 Workers），而 TickListParallel.Tick_Prefix
+                    // 的第一次复查（checkCountdown=1）就会执行 `Workers = DefaultWorkers`
+                    // ⇒ 运行期被永久改回 4，设置里的 14 线程形同虚设（实测报告 `worker 4`）。
+                    // 现在先算设置值，再把它同时写进 Workers 和 DefaultWorkers；
+                    // `/tmp/ttr-workers` 存在时仍按文件覆盖（见 Tick_Prefix）。
+                    TickListParallel.DefaultWorkers = settings.MaxThreadsClamped;
                     TickListParallel.Workers = settings.MaxThreadsClamped;
                     TickListParallel.MinItems = settings.tickListMinItems;
+                    TickListParallel.DefaultKeepPawnBuildingSerial = settings.tickListKeepPawnBuildingSerial;
                     TickListParallel.KeepPawnBuildingSerial = settings.tickListKeepPawnBuildingSerial;
                     MethodInfo target = AccessTools.Method(typeof(TickList), "Tick", Type.EmptyTypes);
                     if (target != null)
