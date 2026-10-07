@@ -361,6 +361,13 @@ namespace FastLoad
             sb.AppendLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,
                 "  观测: {0} tick / {1} 帧 · 实测 TPS: 当前 {2:F0} / 峰值 {3:F0} · 热路径采样 1/{4}（已采样 {5} 次）",
                 ticks, frames, CurrentTps, PeakTps, SampleRate, SampledTotal));
+            // C（2026-10-07）帧探针：实测 FPS → ms/帧；再列出"每帧入口"的代码侧耗时。
+            // 剩余部分 = Unity 渲染/GPU/等待（我们改不到，只能如实报告）。
+            float fpsNow = FPSPlus.FPSPlusCounterOverlay.CurrentFps;
+            sb.AppendLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                "  实测 FPS: 最近 1 秒 {0:F1}（⇒ {1:F2} ms/帧）· 平滑 {2:F1} · TPS {3:F0}",
+                fpsNow, fpsNow > 0.01f ? 1000.0 / fpsNow : 0.0,
+                FPSPlus.FPSPlusCounterOverlay.LastFpsEma, FPSPlus.FPSPlusCounterOverlay.LastTps));
 
             phases.Sort((a, b) => b.Value.CompareTo(a.Value));
             sb.AppendLine("  -- 总账单（含子项 = 该项真实总耗时；独占 = 扣掉已测子项）--");
@@ -405,6 +412,58 @@ namespace FastLoad
                     "  {0,-46} {1,11:F0} ms  ({2} 次)", Trim(kv.Key, 46), kv.Value, count));
             }
             if (shown == 0) sb.AppendLine("  （无）");
+            AppendFrameEntries(sb, typeTotals, frames);
+        }
+
+        /// <summary>
+        /// C（2026-10-07）帧入口（每帧一次的方法）的**窗口化**耗时。
+        /// 窗口 = 上一次写报告以来的增量（报告每 10 秒重写一次）⇒ 可以做前后 A/B；
+        /// 整段会话的平均值会被主菜单/暂停期稀释，那样看不出改动效果。
+        /// </summary>
+        private static readonly Dictionary<string, double> _lastFrameEntryMs = new Dictionary<string, double>();
+        private static long _lastFrameEntryFrames;
+
+        private static readonly string[] FrameEntryKeys = new string[]
+        {
+            "Verse.Map.MapUpdate",
+            "Verse.UIRoot_Play.UIRootOnGUI",
+            "Verse.Root.UIRootOnGUI",
+            "Verse.MapDrawer.MapDrawerUpdate",
+            "RimWorld.MapInterface.MapInterfaceOnGUI",
+            "RimWorld.ColonistBar.ColonistBarOnGUI",
+            "RimWorld.AlertsReadout.AlertsReadoutUpdate",
+            "RimWorld.Selector.SelectorOnGUI",
+        };
+
+        private static void AppendFrameEntries(StringBuilder sb, Dictionary<string, double> typeTotals, long frames)
+        {
+            long df = frames - _lastFrameEntryFrames;
+            _lastFrameEntryFrames = frames;
+            sb.AppendLine("  -- 帧入口（每帧一次；窗口 = 距上次写报告的增量）--");
+            if (df <= 0)
+            {
+                sb.AppendLine("    （窗口内没有新帧）");
+                return;
+            }
+            double sum = 0.0;
+            for (int i = 0; i < FrameEntryKeys.Length; i++)
+            {
+                string k = FrameEntryKeys[i];
+                double v;
+                if (!typeTotals.TryGetValue(k, out v)) continue;
+                double prev;
+                _lastFrameEntryMs.TryGetValue(k, out prev);
+                double delta = v - prev;
+                _lastFrameEntryMs[k] = v;
+                if (delta < 0.0) delta = 0.0;
+                sum += delta;
+                sb.AppendLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                    "    {0,-46} {1,9:F1} ms / {2} 帧 = {3:F3} ms/帧",
+                    Trim(k, 46), delta, df, delta / df));
+            }
+            sb.AppendLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                "    帧入口合计 = {0:F1} ms / {1} 帧 = {2:F3} ms/帧（其余 = Unity 渲染/GPU/等待）",
+                sum, df, sum / df));
         }
 
         private static string Trim(string s, int max)

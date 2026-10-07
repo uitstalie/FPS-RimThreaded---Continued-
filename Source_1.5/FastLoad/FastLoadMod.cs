@@ -35,6 +35,21 @@ namespace FastLoad
         public static FastLoadSettings Settings;
         public static Harmony Harm;
 
+        /// <summary>
+        /// C（2026-10-07）帧探针总开关：设置项 **或** 自动化开关文件 `/tmp/ttr-frames`。
+        /// 加文件开关是为了"不改用户设置也能做帧预算 A/B"，对正常用户零影响
+        /// （只有该文件存在时才多挂 8 个每帧入口钩子）。
+        /// </summary>
+        public static bool FrameProbeEnabled
+        {
+            get
+            {
+                if (Settings != null && Settings.runtimeProfilingFrames) return true;
+                try { return System.IO.File.Exists("/tmp/ttr-frames"); }
+                catch { return false; }
+            }
+        }
+
         /// <summary>由 TTRMod（唯一的 Mod 子类）调用；设置来自 TTRSettings.fastLoadSettings。</summary>
         public static void Init(FastLoadSettings settings)
         {
@@ -295,12 +310,13 @@ namespace FastLoad
                 AddRuntimeHook(ok, fail, "TickManagerUpdate", typeof(TickManager), "TickManagerUpdate", "RtTickUpdate_Begin", fin);
                 AddRuntimeHook(ok, fail, "DoSingleTick", typeof(TickManager), "DoSingleTick", "RtDoSingleTick_Begin", fin);
                 if (Settings.runtimeProfilingMapPost) InstallMapPostProbe(ok, fail, fin);
-            if (Settings.runtimeProfilingFrames) InstallFrameProbe(ok, fail, fin);
-                if (Settings.runtimeProfilingFrames) InstallFrameProbe(ok, fail, fin);
+                // 2026-10-07：原来这一行重复出现两次（合并 FastLoad 时带入）⇒ 开关打开时
+                // InstallFrameProbe 会跑两遍、同一方法被挂两次前缀，耗时被记两倍。
+                if (FrameProbeEnabled) InstallFrameProbe(ok, fail, fin);
                 return;
             }
             if (Settings.runtimeProfilingMapPost) InstallMapPostProbe(ok, fail, fin);
-            if (Settings.runtimeProfilingFrames) InstallFrameProbe(ok, fail, fin);
+            if (FrameProbeEnabled) InstallFrameProbe(ok, fail, fin);
 
             AddRuntimeHook(ok, fail, "TickManagerUpdate", typeof(TickManager), "TickManagerUpdate", "RtTickUpdate_Begin", fin);
             AddRuntimeHook(ok, fail, "DoSingleTick", typeof(TickManager), "DoSingleTick", "RtDoSingleTick_Begin", fin);

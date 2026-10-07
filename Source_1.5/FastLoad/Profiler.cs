@@ -296,6 +296,23 @@ namespace FastLoad
                 RimThreadedTTR.TickListParallel.Batches, RimThreadedTTR.TickListParallel.Items,
                 RimThreadedTTR.TickListParallel.Workers, RimThreadedTTR.TickListParallel.SerialFallbacks,
                 RimThreadedTTR.TickListParallel.ErrorCount, RimThreadedTTR.TickListParallel.DisabledByErrors));
+            // B 诊断（2026-10-07）：批次为 0 时，到底是"桶太小"还是"可并行物件太少"
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                "  P2 诊断：非空桶 {0}（Normal 表 {1}）· MinItems {2} · 通过 n 闸门的桶的真实 par：Σ {3} · max {4} · Σser {5}",
+                RimThreadedTTR.TickListParallel.DiagBuckets, RimThreadedTTR.TickListParallel.DiagNormalBuckets,
+                RimThreadedTTR.TickListParallel.MinItems, RimThreadedTTR.TickListParallel.DiagSumPar,
+                RimThreadedTTR.TickListParallel.DiagMaxPar, RimThreadedTTR.TickListParallel.DiagSumSer));
+            sb.AppendLine("    桶大小 n 分布（全部表）: " + Hist(RimThreadedTTR.TickListParallel.DiagNHist)
+                + " · Σn=" + RimThreadedTTR.TickListParallel.DiagSumN + " · max=" + RimThreadedTTR.TickListParallel.DiagMaxN);
+            sb.AppendLine("    桶大小 n 分布（仅 Normal 表）: " + Hist(RimThreadedTTR.TickListParallel.DiagNormalNHist));
+            sb.AppendLine("    real par 分布（仅通过 n 闸门的桶）: " + Hist(RimThreadedTTR.TickListParallel.DiagParHist));
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                "    Normal 桶内类型（Σ 全部非空桶·诊断开关下才统计）：Pawn {0} · Building {1} · Plant {2} · 其它 {3}"
+                + " ⇒ 推算可并行 Σ {4} · max {5} · 分布 {6}",
+                RimThreadedTTR.TickListParallel.DiagTypePawn, RimThreadedTTR.TickListParallel.DiagTypeBuilding,
+                RimThreadedTTR.TickListParallel.DiagTypePlant, RimThreadedTTR.TickListParallel.DiagTypeOther,
+                RimThreadedTTR.TickListParallel.DiagSumImpliedPar, RimThreadedTTR.TickListParallel.DiagMaxImpliedPar,
+                Hist(RimThreadedTTR.TickListParallel.DiagImpliedParHist)));
 
             // ── B 组（从原版 IL 独立实现）的实测计数器：证明"真的被调用了"而不只是"挂上了" ──
             sb.AppendLine();
@@ -410,6 +427,21 @@ namespace FastLoad
         {
             if (string.IsNullOrEmpty(s)) return "";
             return s.Length <= max ? s : s.Substring(0, max - 1) + "…";
+        }
+
+        /// <summary>P2 诊断：8 档直方图的紧凑输出（档位标签见 TickListParallel.DiagLabels）。</summary>
+        private static string Hist(long[] h)
+        {
+            if (h == null) return "（无）";
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < h.Length; i++)
+            {
+                if (i > 0) sb.Append(" · ");
+                string label = i < RimThreadedTTR.TickListParallel.DiagLabels.Length
+                    ? RimThreadedTTR.TickListParallel.DiagLabels[i] : i.ToString(CultureInfo.InvariantCulture);
+                sb.Append(label).Append('=').Append(h[i]);
+            }
+            return sb.ToString();
         }
     }
 }

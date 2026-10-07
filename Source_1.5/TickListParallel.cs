@@ -46,6 +46,7 @@ namespace RimThreadedTTR
         public static bool DefaultKeepPawnBuildingSerial = true;
         public static bool SettingsDefault;
         private static int checkCountdown = 1;
+        private static int loggedWorkers = -1;
 
         /// <summary>错误过多时自动停用并行（回退原版），防止把游戏搞坏。</summary>
         public static bool DisabledByErrors;
@@ -59,6 +60,39 @@ namespace RimThreadedTTR
         private static FieldInfo fThingLists;
         private static FieldInfo fToRegister;
         private static FieldInfo fToDeregister;
+
+        // ── B 诊断（2026-10-07）：定位"批次恒为 0"到底卡在 n<MinItems 还是 parallelPart<MinItems ──
+        // 口径（务必分清，否则会误读）：
+        //   * DiagNHist / DiagNormalNHist：**所有非空桶**的桶大小分布（全部 3 张表 / 仅 Normal 表）；
+        //   * DiagParHist / DiagSumPar / DiagMaxPar：**只有通过 n>=MinItems 闸门**的桶才有真实 par；
+        //   * DiagType* / DiagImpliedPar*：仅在 /tmp/ttr-p2-diag 打开时，对 **Normal 表的所有非空桶**
+        //     （含 n<MinItems 的小桶）数一遍类型 ⇒ 由此推算"若不受 n 闸门限制，可并行池有多大"。
+        // 直方图常开：每 tick 十几次自增，相对 2.65 ms/tick 可忽略，且报告里长期有用。
+        public static readonly long[] DiagNHist = new long[8];
+        public static readonly long[] DiagNormalNHist = new long[8];
+        public static readonly long[] DiagParHist = new long[8];
+        public static readonly long[] DiagImpliedParHist = new long[8];
+        public static readonly string[] DiagLabels = { "0", "1", "2-3", "4-7", "8-15", "16-31", "32-63", "64+" };
+        public static long DiagBuckets, DiagNormalBuckets;
+        public static long DiagSumN, DiagMaxN;
+        public static long DiagSumPar, DiagSumSer, DiagMaxPar;
+        public static long DiagTypePawn, DiagTypeBuilding, DiagTypePlant, DiagTypeOther;
+        public static long DiagSumImpliedPar, DiagMaxImpliedPar;
+        public const string DiagFlagPath = "/tmp/ttr-p2-diag";
+        private static bool diagOn;
+        private static int diagLogLeft;
+
+        private static int DiagIdx(int v)
+        {
+            if (v <= 0) return 0;
+            if (v == 1) return 1;
+            if (v <= 3) return 2;
+            if (v <= 7) return 3;
+            if (v <= 15) return 4;
+            if (v <= 31) return 5;
+            if (v <= 63) return 6;
+            return 7;
+        }
 
         private static readonly List<Thing> parallelPart = new List<Thing>(2048);
         private static readonly List<Thing> serialPart = new List<Thing>(2048);
@@ -107,6 +141,14 @@ namespace RimThreadedTTR
                 {
                     if (System.IO.File.Exists(DisableFlagPath)) on = false;
                     try { ParallelWildAnimals = System.IO.File.Exists("/tmp/ttr-p2-wild"); } catch { }
+                    // B 诊断开关：存在 ⇒ 记逐桶明细（最多 200 行）与桶内类型统计
+                    try
+                    {
+                        bool wantDiag = System.IO.File.Exists(DiagFlagPath);
+                        if (wantDiag && !diagOn) diagLogLeft = 200;
+                        diagOn = wantDiag;
+                    }
+                    catch { }
                     if (System.IO.File.Exists(IncludeAllFlagPath)) KeepPawnBuildingSerial = false;
                     else KeepPawnBuildingSerial = DefaultKeepPawnBuildingSerial;
                     int w;
@@ -123,6 +165,16 @@ namespace RimThreadedTTR
                 }
                 catch { }
                 Enabled = on;
+                // A（2026-10-07 修）：把**运行期真正生效**的 worker 数打进日志（只在变化时打一行）。
+                // 之前启动日志打的是 settings.MaxThreadsClamped=14，而运行期被这里改回 4，
+                // 两者不一致却没人发现 ⇒ 现在有可核对的运行期证据。
+                if (Workers != loggedWorkers)
+                {
+                    loggedWorkers = Workers;
+                    Log.Message("[RimThreadedTTR] P2 worker 运行期生效 = " + Workers
+                        + "（设置推导 " + DefaultWorkers + " · /tmp/ttr-workers 存在="
+                        + System.IO.File.Exists(WorkersFlagPath) + "）");
+                }
             }
             if (!Enabled || DisabledByErrors || __instance == null) return true;
             // 热点 #3：MapPawns 的派系列表是惰性构建的，且带 AssertMainThread 守卫。
@@ -181,6 +233,36 @@ namespace RimThreadedTTR
             int n = bucket.Count;
             if (n == 0) return;
 
+            // B 诊断：桶大小分布（常开，开销可忽略）
+            DiagBuckets++;
+            DiagSumN += n;
+            if (n > DiagMaxN) DiagMaxN = n;
+            DiagNHist[DiagIdx(n)]++;
+            bool normalList = interval == 1;                 // TickerType.Normal = 每 tick（真正吃帧时间的那张表）
+            if (normalList)
+            {
+                DiagNormalBuckets++;
+                DiagNormalNHist[DiagIdx(n)]++;
+            }
+            // 诊断开关打开时：把 **Normal 表所有非空桶**（含 n<MinItems 的小桶）数一遍类型，
+            // 由此推算"若不看 n 闸门，可并行池到底有多大" —— 这正是"批次恒为 0"的关键数据。
+            if (diagOn && normalList)
+            {
+                int par = 0, ser = 0;
+                for (int i = 0; i < n; i++)
+                {
+                    Thing t = bucket[i];
+                    if (t.Destroyed) continue;
+                    if (t is Building) { DiagTypeBuilding++; ser++; }
+                    else if (t is Pawn) { DiagTypePawn++; ser++; }
+                    else if (t is Plant) { DiagTypePlant++; ser++; }
+                    else { DiagTypeOther++; par++; }
+                }
+                DiagSumImpliedPar += par;
+                if (par > DiagMaxImpliedPar) DiagMaxImpliedPar = par;
+                DiagImpliedParHist[DiagIdx(par)]++;
+            }
+
             if (!Enabled || Workers <= 1 || n < MinItems)
             {
                 SerialFallbacks++;
@@ -203,6 +285,20 @@ namespace RimThreadedTTR
                     serialPart.Add(t);
                 }
                 else parallelPart.Add(t);
+            }
+
+            // B 诊断：真实可并行数分布 + Σ（只覆盖通过 n 闸门的桶）
+            DiagSumPar += parallelPart.Count;
+            DiagSumSer += serialPart.Count;
+            DiagParHist[DiagIdx(parallelPart.Count)]++;
+            if (parallelPart.Count > DiagMaxPar) DiagMaxPar = parallelPart.Count;
+
+            if (diagOn && diagLogLeft > 0)
+            {
+                diagLogLeft--;
+                Log.Message("[RimThreadedTTR][P2DIAG] interval=" + interval + " n=" + n
+                    + " par=" + parallelPart.Count + " ser=" + serialPart.Count
+                    + " MinItems=" + MinItems + " Workers=" + Workers);
             }
 
             double t0 = Time.realtimeSinceStartup;

@@ -88,6 +88,18 @@ namespace FPSPlus
         private bool dragging;
         private Vector2 dragOffset;
 
+        // ── 帧探针输出（2026-10-07）：把"实测 FPS / ms 每帧"写进 FastLoad 报告 ──
+        // 即使计数条关着，本组件也一直在 Repaint 上采样（代价可忽略）；
+        // 这里只是把采样结果暴露给报告，**不改**任何游戏行为。
+        /// <summary>最近一秒的实测帧率（仅在 ProgramState.Playing 下更新）。</summary>
+        public static float CurrentFps;
+        /// <summary>平滑后的帧率（与屏幕计数条同一个值）。</summary>
+        public static float LastFpsEma;
+        /// <summary>最近一次统计的 TPS。</summary>
+        public static float LastTps;
+        private static int fpsWindowFrames;
+        private static float fpsWindowStart = -1f;
+
         public FPSPlusCounterOverlay(Game game)
         {
         }
@@ -179,6 +191,21 @@ namespace FPSPlus
                 }
             }
             PerfHistory.Push(fpsEma, tpsShown, now);
+
+            // 帧探针：最近一秒的实测帧率（窗口计数，与计数条是否显示无关）
+            LastFpsEma = fpsEma;
+            LastTps = tpsShown;
+            fpsWindowFrames++;
+            if (fpsWindowStart < 0f)
+            {
+                fpsWindowStart = now;
+            }
+            else if (now - fpsWindowStart >= 1f)
+            {
+                CurrentFps = fpsWindowFrames / (now - fpsWindowStart);
+                fpsWindowFrames = 0;
+                fpsWindowStart = now;
+            }
 
             bool anyText = s.showFpsCounter || s.showTpsCounter;
             bool anyGraph = s.showFpsGraph || s.showTpsGraph;

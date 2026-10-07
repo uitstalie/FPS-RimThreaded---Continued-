@@ -295,7 +295,13 @@ namespace FastLoad
         /// 因为 Ultrafast 在原版里需要 Dev Mode 才允许（实测被 setter 拒绝）。</summary>
         public static void ForceSpeed_Postfix()
         {
-            if (!FastLoadMod.Settings.forceUltrafast) return;
+            // 2026-10-07：自动化也可以只靠 /tmp 开关文件强制档位（不改用户设置）——
+            // A/B 必须跑在同一速度档，否则帧探针数据没有可比性。
+            if (!FastLoadMod.Settings.forceUltrafast)
+            {
+                try { if (!System.IO.File.Exists("/tmp/ttr-force-superfast")) return; }
+                catch { return; }
+            }
             try
             {
                 TickManager tm = Find.TickManager;
@@ -344,7 +350,12 @@ namespace FastLoad
                     + " ProgramState=" + Current.ProgramState);
             }
             if (_autoLoadDone) return;
-            if (!FastLoadMod.Settings.autoLoadSave) return;
+            // 2026-10-07：`/tmp/ttr-loadsave` 开关文件**本身就足够**（不必再去用户设置里开
+            // autoLoadSave）。原来要求两个条件同时满足，导致自动化拿不到真实存档做 A/B。
+            // 只有该文件存在才生效 ⇒ 对正常用户零影响。
+            bool flagExists = false;
+            try { flagExists = System.IO.File.Exists("/tmp/ttr-loadsave"); } catch { }
+            if (!FastLoadMod.Settings.autoLoadSave && !flagExists) return;
             try
             {
                 if (Current.ProgramState != ProgramState.Entry) return;
