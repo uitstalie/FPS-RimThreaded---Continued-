@@ -363,35 +363,50 @@ namespace FastLoad
                 if (!System.IO.File.Exists(flag)) return;
                 string wanted = System.IO.File.ReadAllText(flag).Trim();
                 string dir = GenFilePaths.SaveDataFolderPath;
-                if (wanted.Length > 0 && wanted.IndexOf('/') >= 0)      // 开关文件里写绝对路径
+                // 2026-10-07 修（事故复盘）：`GameDataSaveLoader.LoadGame(p)` 把 p 当**存档名**，
+                // 内部还会再拼一次 ".rws"（`Path.Combine(dir, name + ".rws")`，而 Path.Combine
+                // 遇到绝对路径会直接采用它）⇒ 传 “…/uitstalie.rws” 实际去打开
+                // “…/uitstalie.rws.rws” ⇒ FileNotFoundException，载入中止。
+                // 实测踩过这一次（用户看到"存档坏了"的假象）。**统一改成本函数自己去掉 ".rws"**，
+                // 让 RimWorld 只拼一次。
+                if (wanted.EndsWith(".rws", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (System.IO.File.Exists(wanted))
+                    wanted = wanted.Substring(0, wanted.Length - 4);
+                }
+                if (wanted.Length > 0 && wanted.IndexOf('/') >= 0)      // 开关文件里写绝对路径（可带 .rws，会被去掉）
+                {
+                    if (System.IO.File.Exists(wanted + ".rws"))
                     {
                         _autoLoadDone = true;
-                        Log.Message("[RimThreadedTTR] FastLoad: 自动载入存档（绝对路径）: " + wanted);
+                        Log.Message("[RimThreadedTTR] FastLoad: 自动载入存档（绝对路径）: " + wanted + ".rws");
                         GameDataSaveLoader.LoadGame(wanted);
                     }
                     else
                     {
-                        Log.Warning("[RimThreadedTTR] FastLoad: 自动载入：绝对路径不存在 " + wanted);
+                        Log.Warning("[RimThreadedTTR] FastLoad: 自动载入：绝对路径不存在 " + wanted + ".rws");
                     }
                     return;
                 }
                 System.IO.DirectoryInfo di = new System.IO.DirectoryInfo(dir);
-                System.IO.FileInfo pick = null;
+                string pickedPath = null;
+                long pickedTicks = -1;
                 if (!string.IsNullOrEmpty(wanted))
                 {
-                    System.IO.FileInfo f = new System.IO.FileInfo(System.IO.Path.Combine(dir, wanted + ".rws"));
-                    if (f.Exists) pick = f;
+                    string candidate = System.IO.Path.Combine(dir, wanted + ".rws");
+                    if (System.IO.File.Exists(candidate)) pickedPath = candidate;
                 }
-                if (pick == null)
+                if (pickedPath == null)
                 {
                     foreach (System.IO.FileInfo f in di.GetFiles("*.rws"))
                     {
-                        if (pick == null || f.LastWriteTimeUtc > pick.LastWriteTimeUtc) pick = f;
+                        if (pickedPath == null || f.LastWriteTimeUtc.Ticks > pickedTicks)
+                        {
+                            pickedPath = f.FullName;
+                            pickedTicks = f.LastWriteTimeUtc.Ticks;
+                        }
                     }
                 }
-                if (pick == null)
+                if (pickedPath == null)
                 {
                     if (!_autoLoadDiag2)
                     {
@@ -402,8 +417,8 @@ namespace FastLoad
                     return;
                 }
                 _autoLoadDone = true;
-                Log.Message("[RimThreadedTTR] FastLoad: 自动载入存档（调试）: " + pick.FullName);
-                GameDataSaveLoader.LoadGame(pick.FullName);
+                Log.Message("[RimThreadedTTR] FastLoad: 自动载入存档（调试）: " + pickedPath);
+                GameDataSaveLoader.LoadGame(pickedPath.Substring(0, pickedPath.Length - 4));   // 去掉 .rws，交给游戏自己拼
             }
             catch (Exception e)
             {

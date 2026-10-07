@@ -518,7 +518,11 @@ namespace FastLoad
             AddRuntimeHookByName(ok, fail, "AlertsReadoutUpdate", "RimWorld.AlertsReadout", "AlertsReadoutUpdate", "RtNamed_Begin", fin);
             AddRuntimeHookByName(ok, fail, "MapInterfaceOnGUI", "RimWorld.MapInterface", "MapInterfaceOnGUI", "RtNamed_Begin", fin);
             AddRuntimeHookByName(ok, fail, "Selector.SelectorOnGUI", "RimWorld.Selector", "SelectorOnGUI", "RtNamed_Begin", fin);
-            AddRuntimeHookByName(ok, fail, "MapDrawer.MapDrawerUpdate", "Verse.MapDrawer", "MapDrawerUpdate", "RtNamed_Begin", fin);
+            // 2026-10-07：1.6.4871 里 **没有** MapDrawer.MapDrawerUpdate 这个方法名
+            // （在 Assembly-CSharp.dll 里搜不到），按原名挂钩只会得到一条"挂钩失败"。
+            // 改用确实存在的渲染入口：Map.MapOnGUI（每帧画地图）与 MapDrawer.DrawMapMesh（建网格）。
+            AddRuntimeHookByName(ok, fail, "Map.MapOnGUI", "Verse.Map", "MapOnGUI", "RtNamed_Begin", fin);
+            AddRuntimeHookByName(ok, fail, "MapDrawer.DrawMapMesh", "Verse.MapDrawer", "DrawMapMesh", "RtNamed_Begin", fin);
             AddRuntimeHookByName(ok, fail, "Root.UIRootOnGUI", "Verse.Root", "UIRootOnGUI", "RtNamed_Begin", fin);
         }
 
